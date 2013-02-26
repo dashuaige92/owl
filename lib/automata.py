@@ -1,43 +1,18 @@
 import re
+from event import EventHook
 
 class State(object):
     """Represent a state in a finite state machine.
 
     A state reads a single character for input by default.
     @token = a regex to match on the input stream, '' for epsilon
-    @enter = list of callbacks when this state is entered in an Automaton
-    @exit = list of callbacks when this state is exited in an Automaton
     """
 
     def __init__(self, token='.'):
         self.token = token
-        self.enter_hooks = []
-        self.exit_hooks = []
-        self.final_hooks = []
-
-    def on(self, event, callback):
-        """Add a callback for this state.
-
-        Available callback events: 'enter', 'exit', 'final'
-        """
-        if event == 'enter':
-            self.enter_hooks.append(callback)
-        elif event == 'exit':
-            self.exit_hooks.append(callback)
-        elif event == 'final':
-            self.final_hooks.append(callback)
-
-    def off(self, event, callback):
-        """Remove a callback for this state.
-
-        Available callback events: 'enter', 'exit', 'final'
-        """
-        if event == 'enter':
-            self.enter_hooks.remove(callback)
-        elif event == 'exit':
-            self.exit_hooks.remove(callback)
-        elif event == 'final':
-            self.final_hooks.remove(callback)
+        self.on_enter = EventHook()
+        self.on_exit = EventHook()
+        self.on_accept = EventHook()
 
 
 class Transition(object):
@@ -46,24 +21,13 @@ class Transition(object):
     @start_state = the state this transition leaves from
     @end_state = the state this transition ends in
     @condition = function(token) that determines if this transition activates
-    @callbacks = callback when this transition is traversed
     """
 
     def __init__(self, start_state, end_state, condition):
         self.start_state = start_state
         self.end_state = end_state
         self.condition = condition
-        self.callbacks = []
-
-    def on(self, callback):
-        """Add a callback for this transition.
-        """
-        self.callbacks.append(callback)
-
-    def off(self, callback):
-        """Remove a callback for this transition.
-        """
-        self.callbacks.remove(callback)
+        self.on_enter = EventHook()
 
 
 class Automaton(object):
@@ -86,23 +50,7 @@ class Automaton(object):
                         raise RuntimeError('Invalid transition', t)
             self.states[t.start_state][t.end_state] = t
 
-        self.reject_hooks = []
-
-    def on(self, event, callback):
-        """Add a callback for this automaton.
-
-        Available callback events: 'reject'
-        """
-        if event == 'reject':
-            self.reject_hooks.append(callback)
-
-    def off(self, event, callback):
-        """Remove a callback for this automaton.
-
-        Available callback events: 'reject'
-        """
-        if event == 'reject':
-            self.reject_hooks.remove(callback)
+        self.on_reject = EventHook()
 
     def stream(self, string):
         """Add to the automaton input stream.
@@ -144,32 +92,21 @@ class Automaton(object):
 
         self.current_input = self.current_input[token.end():]
         # Run exit hooks for current_state
-        for hook in self.current_state.exit_hooks:
-            if not callable(hook):
-                raise TypeError('Hook is not callable', hook)
-            hook()
+        self.current_state.on_exit.fire()
         # Run transition hooks
         transition = self.states[self.current_state][next_state]
-        for hook in transition.callbacks:
-            if not callable(hook):
-                raise TypeError('Hook is not callable', hook)
-            hook()
+        transition.on_enter.fire()
 
         self.current_state = next_state
         # Run enter hooks for next_state
-        for hook in self.current_state.enter_hooks:
-            if not callable(hook):
-                raise TypeError('Hook is not callable', hook)
-            hook()
-
+        self.current_state.on_enter.fire()
         return True
 
     def run(self, string='', streamed=False):
         """Step to the end of the input stream, or until no match is found.
 
         Returns False if no match is found.
-        If the end of the input stream is reached, the automaton is reset and
-        the @final_hooks of the @end_state will run.
+        If the end of the input stream is reached, the automaton is reset.
         Setting @streamed to True disables this.
         """
         self.stream(string)
@@ -178,18 +115,12 @@ class Automaton(object):
                 break
         if len(self.current_input) == 0:
             if not streamed:
-                for hook in self.current_state.final_hooks:
-                    if not callable(hook):
-                        raise TypeError('Hook is not callable', hook)
-                    hook()
+                self.current_state.on_accept.fire()
                 self.reset()
             return True
         else:
             if not streamed:
-                for hook in self.reject_hooks:
-                    if not callable(hook):
-                        raise TypeError('Hook is not callable', hook)
-                    hook()
+                self.on_reject.fire()
                 self.reset()
             return False
 
@@ -210,17 +141,17 @@ def main():
 
     A = State()
     B = State()
-    A.on('final', accept)
-    B.on('final', reject)
+    A.on_accept += accept
+    B.on_accept += reject
 
     ab = Transition(A, B, lambda x: x == 'a')
     ba = Transition(B, A, lambda x: x == 'a')
 
-    ab.on(move)
-    ba.on(move)
+    ab.on_enter += move
+    ba.on_enter += move
 
     a = Automaton([A, B], [ab, ba], A)
-    a.on('reject', reject)
+    a.on_reject += reject
 
     a.run('aa')
     a.run('aa')
