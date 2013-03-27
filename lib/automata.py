@@ -12,7 +12,7 @@ class State(object):
         self.token = token
         self.on_enter = EventHook()
         self.on_exit = EventHook()
-        self.on_accept = EventHook()
+        self.on_end = EventHook()
 
 
 class Transition(object):
@@ -115,7 +115,7 @@ class Automaton(object):
                 break
         if len(self.current_input) == 0:
             if not streamed:
-                self.current_state.on_accept.fire()
+                self.current_state.on_end.fire()
                 self.reset()
             return True
         else:
@@ -141,8 +141,8 @@ def main():
 
     A = State()
     B = State()
-    A.on_accept += accept
-    B.on_accept += reject
+    A.on_end += accept
+    B.on_end += reject
 
     ab = Transition(A, B, lambda x: x == 'a')
     ba = Transition(B, A, lambda x: x == 'a')
