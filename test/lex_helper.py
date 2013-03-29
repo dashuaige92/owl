@@ -3,7 +3,7 @@ import unittest
 from owl.lex import lexer
 
 class LexerTestCase(unittest.TestCase):
-    """A test case that includes helper assertion methods.
+    """A test case that includes helper assertion methods for Owl's lexer.
     """
     def assertTokens(self, string, *tokens, **kwargs):
         msg = kwargs.get('msg')
