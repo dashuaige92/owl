@@ -30,6 +30,7 @@ def p_statement(p):
 def p_expression(p):
     """expression : function_call
                   | string
+                  | number
     """
     p[0] = p[1]
 
@@ -42,6 +43,11 @@ def p_string(p):
     """string : LIT_STRING
     """
     p[0] = ast.Str(p[1][1:-1])
+
+def p_number(p):
+    """number : LIT_NUMBER
+    """
+    p[0] = ast.Num(int(p[1]))
 
 def p_error(p):
     print "Syntax error in input!"
