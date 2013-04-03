@@ -17,7 +17,7 @@ tokens = tuple(reserved.values()) + (
 
     'NEWLINE',
                                     
-    # NEW SECTION
+    # Identifiers
     'NAME'
 )
 
