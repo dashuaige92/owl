@@ -6,6 +6,11 @@ reserved = {
     'print': 'PRINT',
     'true' : 'TRUE' ,
     'false' : 'FALSE' ,
+    'int'   : 'INT',
+    'bool'  : 'BOOL',
+    'float' : 'FLOAT',
+    'string': 'STRING',
+    'list'  : 'LIST',
 }
 
 tokens = tuple(reserved.values()) + (
@@ -18,7 +23,10 @@ tokens = tuple(reserved.values()) + (
     'NEWLINE',
                                     
     # Identifiers
-    'NAME'
+    'NAME',
+
+    # Operators
+    'EQUAL',
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
@@ -29,6 +37,8 @@ t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
 
 t_NEWLINE = r'\n'
+
+t_EQUAL   = '='
 
 t_ignore  = ' \t'
 

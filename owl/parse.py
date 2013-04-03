@@ -24,6 +24,7 @@ def p_code_block(p):
 
 def p_statement(p):
     """statement : NEWLINE
+                 | initialization NEWLINE
                  | expression NEWLINE
     """
     if len(p) == 2:
@@ -42,6 +43,20 @@ def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
     """
     p[0] = ast.Print(None, [p[3]], True)
+
+def p_initialization(p):
+    """initialization : type NAME EQUAL expression
+    """
+    # need to figure out how to add default values to AST
+    # | type NAME
+
+def p_type(p):
+    """type : INT
+            | BOOL
+            | FLOAT
+            | STRING
+            | LIST
+    """
 
 def p_string(p):
     """string : LIT_STRING
