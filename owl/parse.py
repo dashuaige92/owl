@@ -18,14 +18,18 @@ def p_code_block(p):
                   | code_block statement
     """
     if len(p) == 2:
-        p[0] = [p[1]]
+        p[0] = [p[1]] if p[1] is not None else []
     elif len(p) == 3:
-        p[0] = p[1] + [p[2]]
+        p[0] = p[1] + ([p[2]] if p[2] is not None else [])
 
 def p_statement(p):
-    """statement : expression NEWLINE
+    """statement : NEWLINE
+                 | expression NEWLINE
     """
-    p[0] = p[1]
+    if len(p) == 2:
+        p[0] = None
+    elif len(p) == 3:
+        p[0] = p[1]
 
 def p_expression(p):
     """expression : function_call
