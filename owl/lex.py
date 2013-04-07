@@ -18,14 +18,14 @@ tokens = tuple(reserved.values()) + (
     'LIT_STRING', 'LIT_NUMBER', 
 
     # Delimiters
-    'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK'
+    'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK',
     'NEWLINE',
                                     
     # Identifiers
     'NAME',
 
     # Operators
-    'EQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'DOT'
+    'EQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'DOT',
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
