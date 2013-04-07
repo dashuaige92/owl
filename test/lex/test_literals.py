@@ -19,4 +19,4 @@ class TestLiterals(LexerTestCase):
             '(',
             '3',
             ')',
-        )                                       
+        )
