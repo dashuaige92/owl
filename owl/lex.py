@@ -3,8 +3,8 @@ import ply.lex as lex
 
 # Reserved keywords
 reserved = {
-    'print': 'PRINT',
-    'true' : 'TRUE' ,
+    'print' : 'PRINT',
+    'true'  : 'TRUE' ,
     'false' : 'FALSE' ,
     'int'   : 'INT',
     'bool'  : 'BOOL',
@@ -18,27 +18,31 @@ tokens = tuple(reserved.values()) + (
     'LIT_STRING', 'LIT_NUMBER', 
 
     # Delimiters
-    'LPAREN', 'RPAREN',
-
+    'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK'
     'NEWLINE',
                                     
     # Identifiers
     'NAME',
 
     # Operators
-    'EQUAL',
+    'EQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'DOT'
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
 t_LIT_NUMBER = r'[0-9]+'
 
-
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
-
+t_LBRACK  = r'\['
+t_RBRACK  = r'\]'
 t_NEWLINE = r'\n'
 
-t_EQUAL   = '='
+t_EQUAL   = r'='
+t_PLUS    = r'\+'
+t_MINUS   = r'-'
+t_TIMES   = r'\*'
+t_DIVIDE  = r'/'
+t_DOT     = r'\.'
 
 t_ignore  = ' \t'
 
