@@ -9,7 +9,7 @@ class TestInitialization(LexerTestCase):
 			'machine',
 			'm',
 			)
-	def test_delare_init(self):
+	def test_declare_init(self):
 		self.assertTokens(
 			'string s = "test"',
 			'string',

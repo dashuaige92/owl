@@ -18,7 +18,7 @@ tokens = tuple(reserved.values()) + (
     'LIT_STRING', 'LIT_NUMBER', 
 
     # Delimiters
-    'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK',
+    'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK', 'COMMA',
     'NEWLINE',
                                     
     # Identifiers
@@ -35,6 +35,7 @@ t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
 t_LBRACK  = r'\['
 t_RBRACK  = r'\]'
+t_COMMA   = r','
 t_NEWLINE = r'\n'
 
 t_EQUAL   = r'='
@@ -42,7 +43,7 @@ t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
-t_DOT     = r'\.'
+t_DOT     = r'.'
 
 t_ignore  = ' \t'
 

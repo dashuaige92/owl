@@ -9,7 +9,7 @@ class TestInitialization(ParserTestCase):
 	#	"""
 	#	python = r"""
 	#	"""
-	#self.assertAST(owl, python)
+	#   self.assertAST(owl, python)
 
     def test_declare_init(self):
 		owl = textwrap.dedent(r"""
