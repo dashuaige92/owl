@@ -44,11 +44,41 @@ def p_function_call(p):
     """
     p[0] = ast.Print(None, [p[3]], True)
 
+
+
 def p_initialization(p):
     """initialization : type NAME EQUAL expression
+                      | type NAME
     """
-    # need to figure out how to add default values to AST
-    # | type NAME
+
+    if len(p) == 3:
+        # this is for default initialization
+
+
+        if p[1] == "int":
+            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Num(0))
+                
+        elif p[1] == "bool":
+            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Name("False", ast.Load()))
+                
+        elif p[1] == "float":
+            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Num(0))
+
+        elif p[1] == "string":
+            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Str(""))
+                
+        elif p[1] == "list":
+            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.List([],ast.Load()))
+
+        else:
+            print("err")
+        
+
+
+    else:
+          #add type checking here
+          p[0] = ast.Assign([ast.Name(p[2], ast.Store())], p[4])
+
 
 def p_type(p):
     """type : INT
@@ -57,6 +87,8 @@ def p_type(p):
             | STRING
             | LIST
     """
+
+    p[0] = p[1]
 
 def p_string(p):
     """string : LIT_STRING
