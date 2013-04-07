@@ -17,3 +17,4 @@ class TestInitialization(LexerTestCase):
 			'=',
 			'"test"',
 			)
+	#test default init
