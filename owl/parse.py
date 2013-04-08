@@ -26,18 +26,45 @@ def p_statement(p):
     """statement : NEWLINE
                  | initialization NEWLINE
                  | expression NEWLINE
+                 | iteration
     """
-    if len(p) == 2:
+    if p[1] == "\n":
         p[0] = None
-    elif len(p) == 3:
+    else:
         p[0] = p[1]
+
 
 def p_expression(p):
     """expression : function_call
                   | string
                   | number
+                  | variable_load
     """
     p[0] = p[1]
+
+def p_iteration(p):
+    """iteration : WHILE LPAREN expression RPAREN LBRACK statement_list RBRACK
+                 | FOR variable_store IN variable_load LBRACK statement_list RBRACK
+    """
+
+    if p[1] == "while":
+        p[0] = ast.While(p[3], p[6], [])
+    else:
+        p[0] = ast.For(p[2], p[4], p[6], [])
+
+
+def p_statement_list(p):
+    """statement_list : statement
+                      | statement statement_list
+    """
+
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 3:
+        if p[1] is not None:
+            p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+        else:
+            p[0] = ([p[2]] if p[2] is not None else [])
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
@@ -47,8 +74,8 @@ def p_function_call(p):
 
 
 def p_initialization(p):
-    """initialization : type NAME EQUAL expression
-                      | type NAME
+    """initialization : type variable_store EQUAL expression
+                      | type variable_store
     """
 
     if len(p) == 3:
@@ -56,19 +83,19 @@ def p_initialization(p):
 
 
         if p[1] == "int":
-            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Num(0))
+            p[0] = ast.Assign([p[2]], ast.Num(0))
                 
         elif p[1] == "bool":
-            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Name("False", ast.Load()))
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()))
                 
         elif p[1] == "float":
-            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Num(0))
+            p[0] = ast.Assign([p[2]], ast.Num(0))
 
         elif p[1] == "string":
-            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Str(""))
+            p[0] = ast.Assign([p[2]], ast.Str(""))
                 
         elif p[1] == "list":
-            p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.List([],ast.Load()))
+            p[0] = ast.Assign([p[2]], ast.List([],ast.Load()))
 
         else:
             print("err")
@@ -77,7 +104,7 @@ def p_initialization(p):
 
     else:
           #add type checking here
-          p[0] = ast.Assign([ast.Name(p[2], ast.Store())], p[4])
+          p[0] = ast.Assign([p[2]], p[4])
 
 
 def p_type(p):
@@ -99,6 +126,16 @@ def p_number(p):
     """number : LIT_NUMBER
     """
     p[0] = ast.Num(int(p[1]))
+
+def p_variable_store(p):
+    """variable_store : NAME
+    """
+    p[0] = ast.Name(p[1], ast.Store())
+
+def p_variable_load(p):
+    """variable_load : NAME
+        """
+    p[0] = ast.Name(p[1], ast.Load())
 
 def p_error(p):
     print "Syntax error in input!"

@@ -11,6 +11,9 @@ reserved = {
     'float' : 'FLOAT',
     'string': 'STRING',
     'list'  : 'LIST',
+    'for'  : 'FOR',
+    'in'  : 'IN',
+    'while'  : 'WHILE',
 }
 
 tokens = tuple(reserved.values()) + (
@@ -33,8 +36,8 @@ t_LIT_NUMBER = r'[0-9]+'
 
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
-t_LBRACK  = r'\['
-t_RBRACK  = r'\]'
+t_LBRACK  = r'\{'
+t_RBRACK  = r'\}'
 t_COMMA   = r','
 t_NEWLINE = r'\n'
 
@@ -51,6 +54,7 @@ def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     # Check for reserved keywords
     t.type = reserved.get(t.value, 'NAME')
+    #print(t)
     return t
 
 def t_error(t):
