@@ -63,8 +63,8 @@ def p_binary_operator(p):
     p[0] = operators[p[1]]
 
 def p_iteration(p):
-    """iteration : WHILE LPAREN expression RPAREN LBRACK statement_list RBRACK
-                 | FOR variable_store IN variable_load LBRACK statement_list RBRACK
+    """iteration : WHILE LPAREN expression RPAREN LBRACE statement_list RBRACE
+                 | FOR variable_store IN variable_load LBRACE statement_list RBRACE
     """
 
     if p[1] == "while":
