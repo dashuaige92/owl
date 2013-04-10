@@ -46,7 +46,7 @@ t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
-t_DOT     = r'.'
+t_DOT     = r'\.'
 
 t_ignore  = ' \t'
 

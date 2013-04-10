@@ -6,6 +6,8 @@ import lex
 
 tokens = lex.tokens
 precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
 )
 
 def p_program(p):
@@ -36,11 +38,29 @@ def p_statement(p):
 
 def p_expression(p):
     """expression : function_call
+                  | expression binary_operator expression
                   | string
                   | number
                   | variable_load
     """
-    p[0] = p[1]
+    if len(p) == 4:
+        p[0] = ast.Expr(value=ast.BinOp(p[1], p[2], p[3]))
+    else:
+        p[0] = p[1]
+
+def p_binary_operator(p):
+    """binary_operator : PLUS
+                       | MINUS
+                       | TIMES
+                       | DIVIDE
+    """
+    operators = {
+        '+': ast.Add(),
+        '-': ast.Sub(),
+        '*': ast.Mult(),
+        '/': ast.Div(),
+    }
+    p[0] = operators[p[1]]
 
 def p_iteration(p):
     """iteration : WHILE LPAREN expression RPAREN LBRACK statement_list RBRACK
