@@ -18,6 +18,9 @@ reserved = {
     'for'     : 'FOR',
     'in'      : 'IN',
     'while'   : 'WHILE',
+
+    'if'      : 'IF',
+    'else'    : 'ELSE',
 }
 
 tokens = tuple(reserved.values()) + (

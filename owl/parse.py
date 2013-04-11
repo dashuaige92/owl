@@ -94,6 +94,15 @@ def p_iteration(p):
     else:
         p[0] = ast.For(p[2], p[4], p[6], [])
 
+def p_selection_statement(p):
+    """selection_statement : IF LPAREN expression RPAREN LBRACE statement_list RBRACE
+                           | IF LPAREN expression RPAREN LBRACE statement_list RBRACE ELSE LBRACE statement_list RBRACE
+    """
+
+    if len(p) == 8:
+        p[0] = ast.If(p[3], p[6], [])
+    else:
+        p[0] = ast.If(p[3], p[6], p[10])
 
 def p_statement_list(p):
     """statement_list : statement
