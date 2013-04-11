@@ -1,5 +1,9 @@
 import sys, re
+import warnings
+
 import ply.lex as lex
+
+from errors import LexError
 
 # Reserved keywords
 reserved = {
@@ -73,11 +77,10 @@ def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     # Check for reserved keywords
     t.type = reserved.get(t.value, 'NAME')
-    #print(t)
     return t
 
 def t_error(t):
-    print "Illegal character '%s'" % t.value[0]
+    warnings.warn("Illegal character '%s'" % t.value[0], LexError)
     t.lexer.skip(1)
 
 lexer = lex.lex()

@@ -1,8 +1,11 @@
 import sys, re
 import ast
+import warnings
+
 import ply.yacc as yacc
 
 import lex
+from errors import ParseError
 
 tokens = lex.tokens
 precedence = (
@@ -212,7 +215,7 @@ def p_variable_load(p):
     p[0] = ast.Name(p[1], ast.Load())
 
 def p_error(p):
-    print "Syntax error in input!"
+    warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)
 
 parser = yacc.yacc()
 
