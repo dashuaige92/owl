@@ -3,17 +3,21 @@ import ply.lex as lex
 
 # Reserved keywords
 reserved = {
-    'print' : 'PRINT',
-    'true'  : 'TRUE' ,
-    'false' : 'FALSE' ,
-    'int'   : 'INT',
-    'bool'  : 'BOOL',
-    'float' : 'FLOAT',
-    'string': 'STRING',
-    'list'  : 'LIST',
-    'for'  : 'FOR',
-    'in'  : 'IN',
-    'while'  : 'WHILE',
+    'print'   : 'PRINT',
+
+    'true'    : 'TRUE' ,
+    'false'   : 'FALSE' ,
+
+    'int'     : 'INT',
+    'bool'    : 'BOOL',
+    'float'   : 'FLOAT',
+    'string'  : 'STRING',
+    'list'    : 'LIST',
+    'machine' : 'MACHINE',
+
+    'for'     : 'FOR',
+    'in'      : 'IN',
+    'while'   : 'WHILE',
 }
 
 tokens = tuple(reserved.values()) + (
