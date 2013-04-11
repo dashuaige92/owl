@@ -28,7 +28,6 @@ def p_code_block(p):
 def p_statement(p):
     """statement : NEWLINE
                  | initialization NEWLINE
-                 | expression NEWLINE
                  | iteration
     """
     if p[1] == "\n":
@@ -36,6 +35,11 @@ def p_statement(p):
     else:
         p[0] = p[1]
 
+# Python only wraps an expression with Expr when it is its own statement
+def p_statement_expression(p):
+    """statement : expression NEWLINE
+    """
+    p[0] = p[1] if type(p[1]) is ast.Print else ast.Expr(value=p[1])
 
 def p_expression(p):
     """expression : function_call
@@ -61,7 +65,10 @@ def p_arithmetic_expression(p):
         '/': ast.Div(),
         '%': ast.Mod(),
     }
-    p[0] = ast.Expr(value=ast.BinOp(p[1], operators[p[2]], p[3]))
+    p[0] = ast.BinOp(
+        left=p[1],
+        op=operators[p[2]],
+        right=p[3])
 
 def p_comparison_expression(p):
     """comparison_expression : expression EQ expression
@@ -79,10 +86,10 @@ def p_comparison_expression(p):
         '>': ast.Gt(),
         '>=': ast.GtE(),
     }
-    p[0] = ast.Expr(value=ast.Compare(
+    p[0] = ast.Compare(
         left=p[1],
         ops=[operators[p[2]]],
-        comparators=[p[3]]))
+        comparators=[p[3]])
 
 def p_iteration(p):
     """iteration : WHILE LPAREN expression RPAREN LBRACE statement_list RBRACE
