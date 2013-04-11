@@ -6,8 +6,9 @@ import lex
 
 tokens = lex.tokens
 precedence = (
+    ('left', 'EQ', 'NEQ', 'LT', 'LTEQ', 'GT', 'GTEQ'),
     ('left', 'PLUS', 'MINUS'),
-    ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
 
 def p_program(p):
@@ -38,29 +39,50 @@ def p_statement(p):
 
 def p_expression(p):
     """expression : function_call
-                  | expression binary_operator expression
+                  | arithmetic_expression
+                  | comparison_expression
                   | string
                   | number
                   | variable_load
     """
-    if len(p) == 4:
-        p[0] = ast.Expr(value=ast.BinOp(p[1], p[2], p[3]))
-    else:
-        p[0] = p[1]
+    p[0] = p[1]
 
-def p_binary_operator(p):
-    """binary_operator : PLUS
-                       | MINUS
-                       | TIMES
-                       | DIVIDE
+def p_arithmetic_expression(p):
+    """arithmetic_expression : expression PLUS expression
+                             | expression MINUS expression
+                             | expression TIMES expression
+                             | expression DIVIDE expression
+                             | expression MODULO expression
     """
     operators = {
         '+': ast.Add(),
         '-': ast.Sub(),
         '*': ast.Mult(),
         '/': ast.Div(),
+        '%': ast.Mod(),
     }
-    p[0] = operators[p[1]]
+    p[0] = ast.Expr(value=ast.BinOp(p[1], operators[p[2]], p[3]))
+
+def p_comparison_expression(p):
+    """comparison_expression : expression EQ expression
+                             | expression NEQ expression
+                             | expression LT expression
+                             | expression LTEQ expression
+                             | expression GT expression
+                             | expression GTEQ expression
+    """
+    operators = {
+        '==': ast.Eq(),
+        '!=': ast.NotEq(),
+        '<': ast.Lt(),
+        '<=': ast.LtE(),
+        '>': ast.Gt(),
+        '>=': ast.GtE(),
+    }
+    p[0] = ast.Expr(value=ast.Compare(
+        left=p[1],
+        ops=[operators[p[2]]],
+        comparators=[p[3]]))
 
 def p_iteration(p):
     """iteration : WHILE LPAREN expression RPAREN LBRACE statement_list RBRACE

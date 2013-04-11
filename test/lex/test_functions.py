@@ -24,7 +24,7 @@ class TestFunctionCall(LexerTestCase):
 	def test_built_in_functions(self):
 		self.assertTokenTypes(
 			'machine.run(3)',
-			('machine', 'NAME'),
+			('machine', 'MACHINE'),
 			('.', 'DOT'),
 			('run', 'NAME'),
 			('(', 'LPAREN'),

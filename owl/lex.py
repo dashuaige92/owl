@@ -32,7 +32,10 @@ tokens = tuple(reserved.values()) + (
     'NAME',
 
     # Operators
-    'EQUAL', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'DOT',
+    'EQUAL',
+    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULO',
+    'EQ', 'NEQ', 'LT', 'LTEQ', 'GT', 'GTEQ',
+    'DOT',
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
@@ -52,6 +55,13 @@ t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
+t_MODULO  = r'%'
+t_EQ      = r'=='
+t_NEQ     = r'!='
+t_LT      = r'<'
+t_LTEQ     = r'<='
+t_GT      = r'>'
+t_GTEQ     = r'>='
 t_DOT     = r'\.'
 
 t_ignore  = ' \t'

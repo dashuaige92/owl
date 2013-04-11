@@ -47,3 +47,80 @@ class TestBinaryOperators(ParserTestCase):
             2 / 1
             """)
         self.assertAST(owl, python)
+
+    def test_modulo(self):
+        owl = textwrap.dedent(
+            r"""
+            2 % 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 % 1
+            """)
+        self.assertAST(owl, python)
+
+    def test_eq(self):
+        owl = textwrap.dedent(
+            r"""
+            2 == 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 == 1
+            """)
+        self.assertAST(owl, python)
+
+    def test_neq(self):
+        owl = textwrap.dedent(
+            r"""
+            2 != 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 != 1
+            """)
+        self.assertAST(owl, python)
+
+    def test_lt(self):
+        owl = textwrap.dedent(
+            r"""
+            2 < 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 < 1
+            """)
+        self.assertAST(owl, python)
+
+    def test_lteq(self):
+        owl = textwrap.dedent(
+            r"""
+            2 <= 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 <= 1
+            """)
+        self.assertAST(owl, python)
+
+    def test_gt(self):
+        owl = textwrap.dedent(
+            r"""
+            2 > 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 > 1
+            """)
+        self.assertAST(owl, python)
+
+    def test_gteq(self):
+        owl = textwrap.dedent(
+            r"""
+            2 >= 1
+            """)
+        python = textwrap.dedent(
+            r"""
+            2 >= 1
+            """)
+        self.assertAST(owl, python)
