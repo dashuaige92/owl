@@ -119,10 +119,26 @@ def p_statement_list(p):
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
+                     | NAME LPAREN parameters RPAREN
     """
-    p[0] = ast.Print(None, [p[3]], True)
+    if p[1] == 'print':
+        p[0] = ast.Print(None, [p[3]], True)
+    else:
+        p[0] = ast.Expr(value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=p[3], keywords=[], starargs=None, kwargs=None))  
 
 
+def p_parameters(p):
+    """parameters    : expression
+                     | expression COMMA parameters
+    """
+    # How to have one list and add all parameters to it across multiple reductions?
+    #i.e. test(1, 2, 3, 4, 5...)
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        tmp = list(p[3])
+        tmp.insert(0, p[1])
+        p[0] = tmp
 
 def p_initialization(p):
     """initialization : type variable_store EQUAL expression
