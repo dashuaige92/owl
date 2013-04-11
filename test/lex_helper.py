@@ -22,6 +22,6 @@ class LexerTestCase(unittest.TestCase):
                 'Token types not equal.\n' +
                 '\n'.join(
                     ('{:%d} {:%d}' % (w, w)).format(str(t[0]), str(t[1]))
-                    for t in zip(toks, tokens)
+                    for t in zip(('Lexed:',) + toks, ('Expected:',) + tokens)
                 )
             )
