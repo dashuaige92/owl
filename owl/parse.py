@@ -125,7 +125,7 @@ def p_function_call(p):
         p[0] = ast.Print(None, [p[3]], True)
     else:
         p[0] = ast.Expr(value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=p[3], keywords=[], starargs=None, kwargs=None))  
-
+    #could be trouble later, don't know keywords, starargs, etc, more testing?
 
 def p_parameters(p):
     """parameters    : expression
