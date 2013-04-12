@@ -10,9 +10,18 @@ class ParserTestCase(unittest.TestCase):
     """A test case that includes helper assertion methods for Owl's parser.
     """
     def assertAST(self, owl_source, python_source):
-        owl_tree = parser.parse(owl_source)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            owl_tree = parser.parse(owl_source)
+            parse_warnings = len([p for p in w if issubclass(p.category, ParseError)])
+            if parse_warnings != 0:
+                raise AssertionError('Unexpected ParseError in Owl source!')
         owl_dump = astpp.dump(owl_tree)
-        python_tree = ast.parse(python_source)
+
+        try:
+            python_tree = ast.parse(python_source)
+        except SyntaxError:
+            raise AssertionError('Unexpected SyntaxError in Python source!')
         python_dump = astpp.dump(python_tree)
 
         if owl_dump != python_dump:
