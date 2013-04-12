@@ -1,7 +1,9 @@
 import unittest
 import ast
+import warnings
 
 from owl.parse import parser
+from owl.errors import ParseError
 import lib.astpp as astpp
 
 class ParserTestCase(unittest.TestCase):
@@ -18,3 +20,15 @@ class ParserTestCase(unittest.TestCase):
                                  '\n\nOwl:\n' + owl_dump +
                                  '\n\nPython:\n' + python_dump
                                 )
+
+    def assertParseError(self, owl_source, error_count=1):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+
+            parser.parse(owl_source)
+
+            parse_warnings = len([p for p in w if issubclass(p.category, ParseError)])
+            if parse_warnings != error_count:
+                raise AssertionError(
+                    'Expected %d parse errors. Got %d.' % (error_count, parse_warnings)
+                )

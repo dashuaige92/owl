@@ -2,7 +2,7 @@ import unittest
 
 from test.lex_helper import LexerTestCase
 
-class test_binary_operators(LexerTestCase):
+class TestBinaryOperators(LexerTestCase):
 
     def test_plus(self):
         self.assertTokenTypes(
@@ -91,3 +91,14 @@ class test_binary_operators(LexerTestCase):
             ('>=', 'GTEQ'),
             ('1', 'LIT_NUMBER'),
         )
+
+    def test_multiple_operators(self):
+        self.assertTokenTypes(
+            '2 >>== 1',
+            ('2', 'LIT_NUMBER'),
+            ('>', 'GT'),
+            ('>=', 'GTEQ'),
+            ('=', 'EQUAL'),
+            ('1', 'LIT_NUMBER'),
+        )
+

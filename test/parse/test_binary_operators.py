@@ -124,3 +124,6 @@ class TestBinaryOperators(ParserTestCase):
             2 >= 1
             """)
         self.assertAST(owl, python)
+
+    def test_multiple_operators_raises_error(self):
+        self.assertParseError('2 >>== 1')
