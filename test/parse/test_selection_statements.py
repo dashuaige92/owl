@@ -5,6 +5,7 @@ from test.parse_helper import ParserTestCase
 
 class TestSelectionStatements(ParserTestCase):
 
+    @unittest.skip("Not yet implemented")
     def test_if_statements(self):
         owl = textwrap.dedent(
             r"""
@@ -19,6 +20,7 @@ class TestSelectionStatements(ParserTestCase):
             """)
         self.assertAST(owl, python)
 
+    @unittest.skip("Not yet implemented")
     def test_if_else_statements(self):
         owl = textwrap.dedent(
             r"""
