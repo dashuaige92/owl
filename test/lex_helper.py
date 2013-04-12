@@ -8,14 +8,30 @@ class LexerTestCase(unittest.TestCase):
     """A test case that includes helper assertion methods for Owl's lexer.
     """
     def assertTokens(self, string, *tokens):
-        lexer.input(string)
-        toks = tuple(map(lambda t: t.value, [tok for tok in lexer]))
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+
+            lexer.input(string)
+            toks = tuple((tok.value, tok.type) for tok in lexer)
+
+            lex_warnings = len([l for l in w if issubclass(l.category, LexError)])
+            if lex_warnings != 0:
+                raise AssertionError('Unexpected LexError!')
+
         if toks != tokens:
             raise AssertionError(str(toks) + ' != ' + str(tokens))
 
     def assertTokenTypes(self, string, *tokens):
-        lexer.input(string)
-        toks = tuple((tok.value, tok.type) for tok in lexer)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+
+            lexer.input(string)
+            toks = tuple((tok.value, tok.type) for tok in lexer)
+
+            lex_warnings = len([l for l in w if issubclass(l.category, LexError)])
+            if lex_warnings != 0:
+                raise AssertionError('Unexpected LexError!')
+
         if toks != tokens:
             w = max(len(str(tok)) for tok in toks)
             raise AssertionError(
