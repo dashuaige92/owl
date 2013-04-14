@@ -131,11 +131,25 @@ def p_statement_list(p):
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
                      | NAME LPAREN parameters RPAREN
+                     | NAME DOT NAME LPAREN parameters RPAREN
+                     | NAME DOT NAME
+                     | NAME LBRACK LIT_NUMBER RBRACK
+
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True)
+    elif len(p) == 4:
+        p[0] = ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), attr=p[3], ctx=ast.Load())
+    elif len(p) == 7:
+        p[0] = ast.Call(func=ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), \
+            attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     else:
-        p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=p[3], keywords=[], starargs=None, kwargs=None)
+        if p[2] == '[':
+            p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
+                slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
+        elif p[2] == '(':
+            p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), \
+                args=p[3], keywords=[], starargs=None, kwargs=None)
         # Owl doesn't have keyword arguments, *args, or *kwargs
 
 
