@@ -1,3 +1,4 @@
+from itertools import izip_longest
 import unittest
 import warnings
 
@@ -38,7 +39,7 @@ class LexerTestCase(unittest.TestCase):
                 'Token types not equal.\n' +
                 '\n'.join(
                     ('{:%d} {:%d}' % (w, w)).format(str(t[0]), str(t[1]))
-                    for t in zip(('Lexed:',) + toks, ('Expected:',) + tokens)
+                    for t in izip_longest(('Lexed:',) + toks, ('Expected:',) + tokens)
                 )
             )
 
