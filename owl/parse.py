@@ -223,8 +223,24 @@ def p_string(p):
 
 def p_list(p):
     """list : LBRACK parameters RBRACK
+            | RANGE LPAREN number RPAREN
+            | RANGE LPAREN number COMMA number RPAREN
     """
-    p[0] = ast.List(p[2], ast.Load())
+    if p[1] == '[':
+        p[0] = ast.List(p[2], ast.Load())
+
+    elif p[1] == 'range' and p[4] == ',':
+        p[0] = value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=[
+        p[3],p[5]
+      ], keywords=[], starargs=None, kwargs=None)
+
+    else:
+        p[0] = value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=[
+        p[3],
+      ], keywords=[], starargs=None, kwargs=None)
+
+
+
 
 def p_variable_store(p):
     """variable_store : NAME

@@ -25,6 +25,7 @@ reserved = {
 
     'if'      : 'IF',
     'else'    : 'ELSE',
+    'range'   : 'RANGE',
 }
 
 tokens = tuple(reserved.values()) + (
