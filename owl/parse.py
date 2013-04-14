@@ -51,6 +51,7 @@ def p_expression(p):
                   | string
                   | number
                   | variable_load
+                  | list
     """
     p[0] = p[1]
 
@@ -137,6 +138,7 @@ def p_function_call(p):
         p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=p[3], keywords=[], starargs=None, kwargs=None)
         # Owl doesn't have keyword arguments, *args, or *kwargs
 
+
 def p_parameters(p):
     """parameters    : expression
                      | expression COMMA parameters
@@ -172,7 +174,7 @@ def p_initialization(p):
             p[0] = ast.Assign([p[2]], ast.Str(""))
                 
         elif p[1] == "list":
-            p[0] = ast.Assign([p[2]], ast.List([],ast.Load()))
+            p[0] = ast.Assign([p[2]], ast.List(p[4],ast.Load())) #check correctness
 
         else:
             print("err")
@@ -194,15 +196,21 @@ def p_type(p):
 
     p[0] = p[1]
 
+def p_number(p):
+    """number : LIT_NUMBER
+    """
+    p[0] = ast.Num(int(p[1]))   
+
 def p_string(p):
     """string : LIT_STRING
     """
     p[0] = ast.Str(p[1][1:-1])
 
-def p_number(p):
-    """number : LIT_NUMBER
+
+def p_list(p):
+    """list : LBRACK parameters RBRACK
     """
-    p[0] = ast.Num(int(p[1]))
+    p[0] = ast.List(p[2], ast.Load())
 
 def p_variable_store(p):
     """variable_store : NAME

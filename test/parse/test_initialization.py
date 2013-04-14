@@ -4,12 +4,6 @@ import textwrap
 from test.parse_helper import ParserTestCase
 
 class TestInitialization(ParserTestCase):
-	#def test_declare(self):
-	#	owl = r"""machine m'
-	#	"""
-	#	python = r"""
-	#	"""
-	#   self.assertAST(owl, python)
 
     def test_declare_init(self):
         owl = textwrap.dedent(
@@ -58,12 +52,14 @@ class TestInitialization(ParserTestCase):
         self.assertAST(owl, python)
 
 
-#    def test_declare_init_5(self):
-    #		owl = textwrap.dedent(r"""
-    #        list l = []
-    #        """)
-    #		python = textwrap.dedent(r"""l = []
-    #        """)
-    #		self.assertAST(owl, python)
+
+    def test_declare_init_5(self):
+		owl = textwrap.dedent(r"""
+        list l = ["Andrew"]
+        """)
+		python = textwrap.dedent(r"""l = ["Andrew"]
+        """)
+		self.assertAST(owl, python)
+
 
 
