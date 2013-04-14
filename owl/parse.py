@@ -32,6 +32,7 @@ def p_statement(p):
     """statement : NEWLINE
                  | initialization NEWLINE
                  | iteration
+                 | selection_statement
     """
     if p[1] == "\n":
         p[0] = None
@@ -50,6 +51,7 @@ def p_expression(p):
                   | comparison_expression
                   | string
                   | number
+                  | bool
                   | variable_load
                   | list
     """
@@ -241,6 +243,15 @@ def p_list(p):
 
 
 
+
+def p_bool(p):
+    """bool : TRUE
+            | FALSE
+    """
+    if p[1] == "true":
+        p[0] = ast.Name("True", ast.Load())
+    else:
+        p[0] = ast.Name("False", ast.Load())
 
 def p_variable_store(p):
     """variable_store : NAME

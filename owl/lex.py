@@ -30,7 +30,7 @@ reserved = {
 
 tokens = tuple(reserved.values()) + (
     # Literals
-    'LIT_STRING', 'LIT_NUMBER', 
+    'LIT_STRING', 'LIT_NUMBER',
 
     # Delimiters
     'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK', 'LBRACE', 'RBRACE', 'COMMA',
