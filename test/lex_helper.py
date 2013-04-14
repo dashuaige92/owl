@@ -12,7 +12,7 @@ class LexerTestCase(unittest.TestCase):
             warnings.simplefilter('always')
 
             lexer.input(string)
-            toks = tuple((tok.value, tok.type) for tok in lexer)
+            toks = tuple(tok.value for tok in lexer)
 
             lex_warnings = len([l for l in w if issubclass(l.category, LexError)])
             if lex_warnings != 0:
