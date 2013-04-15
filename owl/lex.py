@@ -1,4 +1,4 @@
-import sys, re
+import sys
 import warnings
 
 import ply.lex as lex

@@ -1,3 +1,4 @@
+import sys
 import ast
 
 import parse
@@ -21,6 +22,7 @@ class StandardLibraryAdder(ast.NodeTransformer):
 def build_tree(args):
     tree = parse.build_tree(args)
     tree = StandardLibraryAdder().visit(tree)
+    tree = ast.fix_missing_locations(tree)
     return tree
 
 def main(args):

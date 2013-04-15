@@ -1,4 +1,4 @@
-import sys, re
+import sys
 import ast
 import warnings
 
