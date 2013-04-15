@@ -1,4 +1,4 @@
-import sys, re
+import sys
 import ast
 import warnings
 
@@ -45,6 +45,7 @@ def p_statement(p):
                  | initialization NEWLINE
                  | iteration
                  | machine
+                 | selection_statement
     """
     if p[1] == "\n":
         p[0] = None
@@ -65,6 +66,7 @@ def p_expression(p):
                   | comparison_expression
                   | string
                   | number
+                  | bool
                   | variable_load
                   | list
     """
@@ -257,6 +259,15 @@ def p_list(p):
 
 
 
+def p_bool(p):
+    """bool : TRUE
+            | FALSE
+    """
+    if p[1] == "true":
+        p[0] = ast.Name("True", ast.Load())
+    else:
+        p[0] = ast.Name("False", ast.Load())
+
 def p_variable_store(p):
     """variable_store : NAME
     """
@@ -327,10 +338,23 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        tree = parser.parse(open(sys.argv[1]).read())
+def build_tree(args):
+    """Build an AST tree from expected command line args.
+
+    args[0] = script name
+    args[1] = <filename>
+    args[1] = None for reading stdin.
+    """
+    if len(args) > 1:
+        tree = parser.parse(open(args[1]).read())
     else:
         tree = parser.parse(sys.stdin.read())
     tree = ast.fix_missing_locations(tree)
+    return tree
+
+def main(args):
+    tree = build_tree(args)
     exec compile(tree, '<string>', mode='exec')
+
+if __name__ == '__main__':
+    main(sys.argv)

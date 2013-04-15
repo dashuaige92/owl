@@ -1,4 +1,4 @@
-import sys, re
+import sys
 import warnings
 
 import ply.lex as lex
@@ -33,7 +33,7 @@ reserved = {
 
 tokens = tuple(reserved.values()) + (
     # Literals
-    'LIT_STRING', 'LIT_NUMBER', 
+    'LIT_STRING', 'LIT_NUMBER',
 
     # Delimiters
     'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK', 'LBRACE', 'RBRACE', 'COMMA',
@@ -93,10 +93,13 @@ def t_error(t):
 
 lexer = lex.lex()
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        lexer.input(open(sys.argv[1]).read())
+def main(args):
+    if len(args) > 1:
+        lexer.input(open(args[1]).read())
     else:
         lexer.input(sys.stdin.read())
     for tok in lexer:
         print tok
+
+if __name__ == '__main__':
+    main(sys.argv)
