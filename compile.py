@@ -4,7 +4,6 @@ Usage: python compile.py [owl-source-file]
 """
 
 import sys
-import ast
 
 from owl import transform
 from lib.codegen import to_source

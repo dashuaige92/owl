@@ -1,13 +1,10 @@
 """
-Usage: python compile.py [owl-source-file]
-       python compile.py [owl-source-file] > [python-dest-file]
+Usage: python run.py [owl-source-file]
 """
 
 import sys
-import ast
 
 from owl import transform
-from lib.codegen import to_source
 
 if __name__ == '__main__':
     tree = transform.build_tree(sys.argv)
