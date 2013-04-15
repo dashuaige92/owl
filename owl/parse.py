@@ -268,10 +268,23 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        tree = parser.parse(open(sys.argv[1]).read())
+def build_tree(args):
+    """Build an AST tree from expected command line args.
+
+    args[0] = script name
+    args[1] = <filename>
+    args[1] = None for reading stdin.
+    """
+    if len(args) > 1:
+        tree = parser.parse(open(args[1]).read())
     else:
         tree = parser.parse(sys.stdin.read())
     tree = ast.fix_missing_locations(tree)
+    return tree
+
+def main(args):
+    tree = build_tree(args)
     exec compile(tree, '<string>', mode='exec')
+
+if __name__ == '__main__':
+    main(sys.argv)
