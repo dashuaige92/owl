@@ -14,6 +14,10 @@ precedence = (
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
 
+
+machine_nodes = []
+machine_trans = []
+
 def p_program(p):
     """program : code_block
     """
@@ -23,20 +27,31 @@ def p_code_block(p):
     """code_block : statement
                   | code_block statement
     """
+
     if len(p) == 2:
-        p[0] = [p[1]] if p[1] is not None else []
+        p[0] = p[1] if p[1] is not None else []
     elif len(p) == 3:
-        p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+        if p[2] is None:
+            p[0] = p[1] + ([])
+        elif type(p[2]) is list:
+            p[0] = p[1] + (p[2])
+        else:
+            p[0] = p[1] + ([p[2]])
+
+
 
 def p_statement(p):
     """statement : NEWLINE
                  | initialization NEWLINE
                  | iteration
+                 | machine
     """
     if p[1] == "\n":
         p[0] = None
     else:
         p[0] = p[1]
+
+
 
 # Python only wraps an expression with Expr when it is its own statement
 def p_statement_expression(p):
@@ -251,6 +266,61 @@ def p_variable_load(p):
     """variable_load : NAME
         """
     p[0] = ast.Name(p[1], ast.Load())
+
+def p_machine(p):
+    """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
+    """
+
+    p[0] = p[5] + [ast.Assign([ast.Name(p[2], ast.Store())], ast.Call(ast.Name('Automaton', ast.Load()), [
+                                                                                              ast.List([ast.Name(x, ast.Load()) for x in machine_nodes],
+                                                                                                        ast.Load()),
+                                                                                              ast.List([ast.Name(x, ast.Load()) for x in machine_trans],
+                                                                                                        ast.Load()),
+                                                                                              ast.Name(machine_nodes[0] if len(machine_nodes) != 0 else 'None', ast.Load()),
+                                                                                            ], [], None, None)) ]
+    
+    list([machine_nodes.pop() for z in xrange(len(machine_nodes))])
+    list([machine_trans.pop() for z in xrange(len(machine_trans))])
+
+
+def p_machine_body(p):
+    """machine_body : node_decs transitions
+    """
+    p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+
+def p_node_decs(p):
+    """node_decs : node
+                 | node_decs node
+    """
+    if len(p) == 2:
+        p[0] = [p[1]] if p[1] is not None else []
+    elif len(p) == 3:
+        p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+
+def p_node(p):
+    """node : NODE NAME NEWLINE
+            | NEWLINE
+    """
+    if len(p) == 4:
+        p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Call(ast.Name('State', ast.Load()), [], [], None, None))
+        machine_nodes.append(p[2])
+
+def p_transitions(p):
+    """transitions : transition
+                   | transitions transition
+    """
+    pass
+
+def p_transition(p):
+    """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
+                  | NAME LPAREN string RPAREN ARROW NAME LBRACK statement_list RBRACK
+                  | NEWLINE
+                  |
+    """
+
+    if len(p) != 1:
+        machine_trans.append(str(p[1])+str(p[6]))
+
 
 def p_error(p):
     warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)

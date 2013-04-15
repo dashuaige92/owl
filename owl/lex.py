@@ -26,6 +26,9 @@ reserved = {
     'if'      : 'IF',
     'else'    : 'ELSE',
     'range'   : 'RANGE',
+
+    'machine' : 'MACHINE',
+    'node'    : 'NODE',
 }
 
 tokens = tuple(reserved.values()) + (
@@ -44,6 +47,8 @@ tokens = tuple(reserved.values()) + (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULO',
     'EQ', 'NEQ', 'LT', 'LTEQ', 'GT', 'GTEQ',
     'DOT',
+
+    'ARROW',
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
@@ -71,6 +76,8 @@ t_LTEQ     = r'<='
 t_GT      = r'>'
 t_GTEQ     = r'>='
 t_DOT     = r'\.'
+
+t_ARROW     = r'->'
 
 t_ignore  = ' \t'
 
