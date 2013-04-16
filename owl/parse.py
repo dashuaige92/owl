@@ -5,6 +5,7 @@ import warnings
 import ply.yacc as yacc
 
 import lex
+import nodes
 from errors import ParseError
 
 tokens = lex.tokens
@@ -13,10 +14,6 @@ precedence = (
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
-
-
-machine_nodes = []
-machine_trans = []
 
 def p_program(p):
     """program : code_block
@@ -27,32 +24,22 @@ def p_code_block(p):
     """code_block : statement
                   | code_block statement
     """
-
     if len(p) == 2:
-        p[0] = p[1] if p[1] is not None else []
+        p[0] = [p[1]] if p[1] is not None else []
     elif len(p) == 3:
-        if p[2] is None:
-            p[0] = p[1]
-        elif type(p[2]) is list:
-            p[0] = p[1] + (p[2])
-        else:
-            p[0] = p[1] + ([p[2]])
-
-
+        p[0] = p[1] + ([p[2]] if p[2] is not None else [])
 
 def p_statement(p):
     """statement : NEWLINE
                  | initialization NEWLINE
                  | iteration
-                 | machine
                  | selection_statement
+                 | machine
     """
     if p[1] == "\n":
         p[0] = None
     else:
         p[0] = p[1]
-
-
 
 # Python only wraps an expression with Expr when it is its own statement
 def p_statement_expression(p):
@@ -256,9 +243,6 @@ def p_list(p):
         p[3],
       ], keywords=[], starargs=None, kwargs=None)
 
-
-
-
 def p_bool(p):
     """bool : TRUE
             | FALSE
@@ -279,25 +263,16 @@ def p_variable_load(p):
     p[0] = ast.Name(p[1], ast.Load())
 
 def p_machine(p):
-    """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
+    """machine : MACHINE NAME EQUAL LBRACE NEWLINE machine_body RBRACE
     """
-
-    p[0] = p[5] + [ast.Assign([ast.Name(p[2], ast.Store())], ast.Call(ast.Name('Automaton', ast.Load()), [
-                                                                                              ast.List([ast.Name(x, ast.Load()) for x in machine_nodes],
-                                                                                                        ast.Load()),
-                                                                                              ast.List([ast.Name(x, ast.Load()) for x in machine_trans],
-                                                                                                        ast.Load()),
-                                                                                              ast.Name(machine_nodes[0] if len(machine_nodes) != 0 else 'None', ast.Load()),
-                                                                                            ], [], None, None)) ]
-    
-    list([machine_nodes.pop() for z in xrange(len(machine_nodes))])
-    list([machine_trans.pop() for z in xrange(len(machine_trans))])
-
+    p[0] = nodes.Machine(p[2], **p[6])
 
 def p_machine_body(p):
-    """machine_body : node_decs transitions
+    """machine_body : node_decs
     """
-    p[0] = p[1] + p[2]
+    p[0] = {
+        'nodes': p[1],
+    }
 
 def p_node_decs(p):
     """node_decs : node
@@ -310,72 +285,13 @@ def p_node_decs(p):
 
 def p_node(p):
     """node : NODE NAME NEWLINE
-            | NEWLINE
     """
-    if len(p) == 4:
-        p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Call(ast.Name('State', ast.Load()), [], [], None, None))
-        machine_nodes.append(p[2])
+    p[0] = nodes.Node(p[2])
 
-def p_transitions(p):
-    """transitions : transition
-                   | transitions transition
+def p_empty(p):
+    """empty :
     """
-
-    if len(p) == 2:
-        if p[1] is None:
-            p[0] = []
-        elif type(p[1]) is list:
-            p[0] = p[1]
-        else:
-            p[0] = [p[1]]
-
-    elif len(p) == 3:
-        if p[2] is None:
-            p[0] = p[1]
-        elif type(p[2]) is list:
-            p[0] = p[1] + p[2]
-        else:
-            p[0] = p[1] + [p[2]]
-    
-
-def p_transition(p):
-    """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN string RPAREN ARROW NAME LBRACE statement_list RBRACE
-                  | NEWLINE
-                  |
-    """
-
-    if len(p) == 10:
-        machine_trans.append(str(p[1])+str(p[6]))
-
-
-        p[0] = []
-
-        p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), p[8] if p[8] is not None else [ast.Pass()], []))
-
-
-        p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
-                                                                                                        ast.Name(p[6], ast.Load()),
-                                                                                                        ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load()),
-                                                                                                        ], [], None, None)))
-
-    elif len(p) == 8:
-        machine_trans.append(str(p[1])+str(p[6]))
-
-
-        p[0] = []
-
-        p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), [ast.Pass()], []))
-
-        p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
-                                                                                                    ast.Name(p[6], ast.Load()),
-                                                                                                    ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load()),
-                                                                                                    ], [], None, None)))
-
-
-
-    else:
-        pass
+    pass
 
 def p_error(p):
     warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)

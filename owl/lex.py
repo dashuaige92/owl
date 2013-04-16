@@ -17,6 +17,7 @@ reserved = {
     'float'   : 'FLOAT',
     'string'  : 'STRING',
     'list'    : 'LIST',
+    'node'    : 'NODE',
     'machine' : 'MACHINE',
 
     'for'     : 'FOR',
