@@ -268,10 +268,11 @@ def p_machine(p):
     p[0] = nodes.Machine(p[2], **p[5])
 
 def p_machine_body(p):
-    """machine_body : node_decs
+    """machine_body : node_decs transitions
     """
     p[0] = {
         'nodes': p[1],
+        'transitions': p[2],
     }
 
 def p_node_decs(p):
@@ -288,6 +289,25 @@ def p_node(p):
             | NEWLINE
     """
     p[0] = None if len(p) is 2 else nodes.Node(p[2])
+
+def p_transitions(p):
+    """transitions : transition
+                   | transitions transition
+    """
+    if len(p) == 2:
+        p[0] = [p[1]] if p[1] is not None else []
+    elif len(p) == 3:
+        p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+
+def p_transition(p):
+    """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
+                  | NAME LPAREN string RPAREN ARROW NAME LBRACE statement_list RBRACE
+                  |
+    """
+    if len(p) == 8:
+        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[])
+    elif len(p) == 10:
+        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[8])
 
 def p_empty(p):
     """empty :
