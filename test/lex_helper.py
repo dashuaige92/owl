@@ -14,9 +14,7 @@ class LexerTestCase(unittest.TestCase):
 
             lexer.input(string)
             toks = tuple(tok.value for tok in lexer)
-
-            lex_warnings = len([l for l in w if issubclass(l.category, LexError)])
-            if lex_warnings != 0:
+            if any(issubclass(e.category, LexError) for e in w):
                 raise AssertionError('Unexpected LexError!')
 
         if toks != tokens:
@@ -28,9 +26,7 @@ class LexerTestCase(unittest.TestCase):
 
             lexer.input(string)
             toks = tuple((tok.value, tok.type) for tok in lexer)
-
-            lex_warnings = len([l for l in w if issubclass(l.category, LexError)])
-            if lex_warnings != 0:
+            if any(issubclass(e.category, LexError) for e in w):
                 raise AssertionError('Unexpected LexError!')
 
         if toks != tokens:
@@ -48,12 +44,9 @@ class LexerTestCase(unittest.TestCase):
             warnings.simplefilter('always')
 
             lexer.input(string)
-
             # We need to lex the whole string to get any errors
             [tok for tok in lexer]
-
-            lex_warnings = len([l for l in w if issubclass(l.category, LexError)])
-            if lex_warnings != error_count:
+            if len([issubclass(e.category, LexError) for e in w]) != error_count:
                 raise AssertionError(
                     'Expected %d lex errors. Got %d.' % (error_count, lex_warnings)
                 )

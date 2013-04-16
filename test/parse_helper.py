@@ -14,8 +14,7 @@ class ParserTestCase(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
             owl_tree = parser.parse(owl_source)
-            parse_warnings = len([p for p in w if issubclass(p.category, ParseError)])
-            if parse_warnings != 0:
+            if any(issubclass(e.category, ParseError) for e in w):
                 raise AssertionError('Unexpected ParseError in Owl source!')
         owl_dump = astpp.dump(owl_tree)
 
@@ -31,17 +30,13 @@ class ParserTestCase(unittest.TestCase):
                                  '\n\nPython:\n' + python_dump
                                 )
 
-    def assertParseError(self, owl_source, error_count=1):
+    def assertParseError(self, owl_source):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
             parser.parse(owl_source)
-
-            parse_warnings = len([p for p in w if issubclass(p.category, ParseError)])
-            if parse_warnings != error_count:
-                raise AssertionError(
-                    'Expected %d parse errors. Got %d.' % (error_count, parse_warnings)
-                )
+            if not any(issubclass(e.category, ParseError) for e in w):
+                raise AssertionError('Expected ParseError not raised!')
 
 class TransformTestCase(ParserTestCase):
     """An extension of ParserTestCase that performs AST transformation first.
@@ -53,9 +48,7 @@ class TransformTestCase(ParserTestCase):
             # Build the AST and apply transformations.
             owl_tree = parser.parse(owl_source)
             owl_tree = transform.transform(owl_tree)
-
-            parse_warnings = len([p for p in w if issubclass(p.category, ParseError)])
-            if parse_warnings != 0:
+            if any(issubclass(e.category, ParseError) for e in w):
                 raise AssertionError('Unexpected ParseError in Owl source!')
         owl_dump = astpp.dump(owl_tree)
 
@@ -71,16 +64,11 @@ class TransformTestCase(ParserTestCase):
                                  '\n\nPython:\n' + python_dump
                                 )
 
-    def assertTransformError(self, owl_source, error_count=1):
+    def assertTransformError(self, owl_source):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
             owl_tree = parser.parse(owl_source)
             owl_tree = transform.transform(owl_tree)
-
-            parse_warnings = len([p for p in w if issubclass(p.category, ParseError)])
-            if parse_warnings != error_count:
-                raise AssertionError(
-                    'Expected %d parse errors. Got %d.' % (error_count, parse_warnings)
-                )
-
+            if not any(issubclass(e.category, ParseError) for e in w):
+                raise AssertionError('Expected TransformError not raised!')

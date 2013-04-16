@@ -72,9 +72,7 @@ def transform(tree):
 
 def build_tree(args):
     tree = parse.build_tree(args)
-    tree = StandardLibraryAdder().visit(tree)
-    tree = MachineCodeGenerator().visit(tree)
-    tree = ast.fix_missing_locations(tree)
+    tree = transform(tree)
     return tree
 
 def main(args):
