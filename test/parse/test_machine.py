@@ -34,10 +34,9 @@ class TestMachine(ParserTestCase):
         
         self.assertAST(owl, python)
 
-    @unittest.skip("Not yet implemented")
     def test_machine_trans(self):
         owl = textwrap.dedent(r"""
-            machine m = {
+            machine m3 = {
                 node a
                 node b
                 a("1") -> b
@@ -53,11 +52,37 @@ class TestMachine(ParserTestCase):
 
             ab = Transition(a, b, trans_ab)
 
-            m = Automaton([a,b],[ab],a)
+            m3 = Automaton([a,b],[ab],a)
 
             """)
 
         self.assertAST(owl, python)
 
+    #@unittest.skip("Not yet implemented")
+    def test_machine_trans_2(self):
+        owl = textwrap.dedent(r"""
+            machine m4 = {
+                node a
+                node b
+                a("1") -> b {
+                    print("hello")
+                }
+            }
+            """)
+
+        python = textwrap.dedent(r"""
+            a = State()
+            b = State()
+            
+            def trans_ab():
+                print("hello")
+
+            ab = Transition(a, b, trans_ab)
+
+            m4 = Automaton([a,b],[ab],a)
+
+            """)
+
+        self.assertAST(owl, python)
 
 

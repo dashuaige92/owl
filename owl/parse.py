@@ -32,7 +32,7 @@ def p_code_block(p):
         p[0] = p[1] if p[1] is not None else []
     elif len(p) == 3:
         if p[2] is None:
-            p[0] = p[1] + ([])
+            p[0] = p[1]
         elif type(p[2]) is list:
             p[0] = p[1] + (p[2])
         else:
@@ -297,7 +297,7 @@ def p_machine(p):
 def p_machine_body(p):
     """machine_body : node_decs transitions
     """
-    p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+    p[0] = p[1] + p[2]
 
 def p_node_decs(p):
     """node_decs : node
@@ -320,18 +320,62 @@ def p_transitions(p):
     """transitions : transition
                    | transitions transition
     """
-    pass
+
+    if len(p) == 2:
+        if p[1] is None:
+            p[0] = []
+        elif type(p[1]) is list:
+            p[0] = p[1]
+        else:
+            p[0] = [p[1]]
+
+    elif len(p) == 3:
+        if p[2] is None:
+            p[0] = p[1]
+        elif type(p[2]) is list:
+            p[0] = p[1] + p[2]
+        else:
+            p[0] = p[1] + [p[2]]
+    
 
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN string RPAREN ARROW NAME LBRACK statement_list RBRACK
+                  | NAME LPAREN string RPAREN ARROW NAME LBRACE statement_list RBRACE
                   | NEWLINE
                   |
     """
 
-    if len(p) != 1:
+    if len(p) == 10:
         machine_trans.append(str(p[1])+str(p[6]))
 
+
+        p[0] = []
+
+        p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), p[8] if p[8] is not None else [ast.Pass()], []))
+
+
+        p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
+                                                                                                        ast.Name(p[6], ast.Load()),
+                                                                                                        ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load()),
+                                                                                                        ], [], None, None)))
+
+    elif len(p) == 8:
+        machine_trans.append(str(p[1])+str(p[6]))
+
+
+        p[0] = []
+
+        p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), [ast.Pass()], []))
+
+        p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
+                                                                                                    ast.Name(p[6], ast.Load()),
+                                                                                                    ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load()),
+                                                                                                    ], [], None, None)))
+
+
+
+    else:
+        pass
 
 def p_error(p):
     warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)
