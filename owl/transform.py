@@ -3,7 +3,7 @@ import ast
 import warnings
 
 import parse
-from errors import ParseError
+from errors import TransformError
 
 class StandardLibraryAdder(ast.NodeTransformer):
     """Append AST Nodes to mimic a standard library.
@@ -26,7 +26,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
     def visit_Machine(self, node):
         self.generic_visit(node)
         if len(node.nodes) is 0:
-            warnings.warn("Machine must declare at least one node!", ParseError)
+            warnings.warn("Machine must declare at least one node!", TransformError)
             return node
         statements = node.nodes + [
             ast.copy_location(ast.Assign(
