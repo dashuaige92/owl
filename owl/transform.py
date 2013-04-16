@@ -64,9 +64,10 @@ class MachineCodeGenerator(ast.NodeTransformer):
             )
         ), node)
 
-def transform(tree):
-    tree = StandardLibraryAdder().visit(tree)
-    tree = MachineCodeGenerator().visit(tree)
+def transform(tree, filters=[]):
+    for Transformer in [StandardLibraryAdder, MachineCodeGenerator]:
+        if Transformer not in filters:
+            tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)
     return tree
 

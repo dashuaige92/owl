@@ -22,7 +22,6 @@ class TestMachine(TransformTestCase):
             """)
 
         python = textwrap.dedent(r"""
-            from lib.automata import *
             a = State()
             b = State()
             m2 = Automaton([a,b],[],a)

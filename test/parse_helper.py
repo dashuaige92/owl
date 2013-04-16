@@ -41,13 +41,14 @@ class ParserTestCase(unittest.TestCase):
 class TransformTestCase(ParserTestCase):
     """An extension of ParserTestCase that performs AST transformation first.
     """
-    def assertTransformedAST(self, owl_source, python_source):
+    def assertTransformedAST(self, owl_source, python_source,
+                             transform_filters=[transform.StandardLibraryAdder]):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
             # Build the AST and apply transformations.
             owl_tree = parser.parse(owl_source)
-            owl_tree = transform.transform(owl_tree)
+            owl_tree = transform.transform(owl_tree, transform_filters)
             if any(issubclass(e.category, ParseError) for e in w):
                 raise AssertionError('Unexpected ParseError in Owl source!')
         owl_dump = astpp.dump(owl_tree)
