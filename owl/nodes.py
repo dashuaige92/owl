@@ -17,27 +17,24 @@ def flatten_nodes(seq):
 class Node(ast.stmt):
     _fields = ('name',)
 
-    def __init__(self, name, lineno=None):
+    def __init__(self, name):
         self.name = name
-        self.lineno = lineno
 
 class Transition(ast.stmt):
     _fields = ('left', 'arg', 'right', 'body')
 
-    def __init__(self, left, arg, right, body=[], lineno=None):
+    def __init__(self, left, arg, right, body=[]):
         self.left = left
         self.arg = arg
         self.right = right
         self.body = body
-        self.lineno = lineno
 
 class Machine(ast.stmt):
     _fields = ('name', 'data', 'nodes', 'functions', 'transitions')
 
-    def __init__(self, name, data=[], nodes=[], functions=[], transitions=[], lineno=None):
+    def __init__(self, name, data=[], nodes=[], functions=[], transitions=[]):
         self.name = name
         self.data = data
         self.nodes = nodes
         self.functions = functions
         self.transitions = transitions
-        self.lineno = lineno

@@ -28,7 +28,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         if len(node.nodes) is 0:
             warnings.warn("Machine must declare at least one node!", TransformError)
             return node
-        statements = node.nodes + [
+        statements = node.nodes + node.transitions + [
             ast.copy_location(ast.Assign(
                 targets=[ast.Name(id=node.name, ctx=ast.Store())],
                 value=ast.Call(
@@ -41,7 +41,13 @@ class MachineCodeGenerator(ast.NodeTransformer):
                                 ctx=ast.Load(),
                             ) for assign in node.nodes
                         ], ctx=ast.Load()),
-                        ast.List(elts=[], ctx=ast.Load()),
+                        ast.List(elts=[
+                            # nodes.Transition already converted to ast.Assign
+                            ast.Name(
+                                id=assign.targets[0].id,
+                                ctx=ast.Load(),
+                            ) for assign in node.transitions
+                        ], ctx=ast.Load()),
                         ast.Name(id=node.nodes[0].targets[0].id, ctx=ast.Load()),
                     ],
                     keywords=[],
@@ -58,6 +64,31 @@ class MachineCodeGenerator(ast.NodeTransformer):
             value=ast.Call(
                 func=ast.Name(id='State', ctx=ast.Load()),
                 args=[],
+                keywords=[],
+                starargs=None,
+                kwargs=None,
+            )
+        ), node)
+
+    def visit_Transition(self, node):
+        return ast.copy_location(ast.Assign(
+            targets=[ast.Name(
+                id='_%s_%s' % (node.left, node.right),
+                ctx=ast.Store(),
+            )],
+            value=ast.Call(
+                func=ast.Name(id='Transition', ctx=ast.Load()),
+                args=[
+                    ast.Name(id=node.left, ctx=ast.Load()),
+                    ast.Name(id=node.right, ctx=ast.Load()),
+                    ast.Lambda(args=ast.arguments(args=[
+                        ast.Name(id='_x', ctx=ast.Param()),
+                    ], vararg=None, kwarg=None, defaults=[]), body=ast.Compare(left=ast.Name(id='_x', ctx=ast.Load()), ops=[
+                        ast.Eq(),
+                    ], comparators=[
+                        ast.Str(s=node.arg.s), # Get value of ast.Str in arg
+                    ]))
+                ],
                 keywords=[],
                 starargs=None,
                 kwargs=None,
