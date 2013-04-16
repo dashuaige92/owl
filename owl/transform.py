@@ -27,6 +27,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         self.generic_visit(node)
         if len(node.nodes) is 0:
             warnings.warn("Machine must declare at least one node!", ParseError)
+            return node
         statements = node.nodes + [
             ast.copy_location(ast.Assign(
                 targets=[ast.Name(id=node.name, ctx=ast.Store())],
@@ -62,6 +63,12 @@ class MachineCodeGenerator(ast.NodeTransformer):
                 kwargs=None,
             )
         ), node)
+
+def transform(tree):
+    tree = StandardLibraryAdder().visit(tree)
+    tree = MachineCodeGenerator().visit(tree)
+    tree = ast.fix_missing_locations(tree)
+    return tree
 
 def build_tree(args):
     tree = parse.build_tree(args)

@@ -263,9 +263,9 @@ def p_variable_load(p):
     p[0] = ast.Name(p[1], ast.Load())
 
 def p_machine(p):
-    """machine : MACHINE NAME EQUAL LBRACE NEWLINE machine_body RBRACE
+    """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
     """
-    p[0] = nodes.Machine(p[2], **p[6])
+    p[0] = nodes.Machine(p[2], **p[5])
 
 def p_machine_body(p):
     """machine_body : node_decs
@@ -285,8 +285,9 @@ def p_node_decs(p):
 
 def p_node(p):
     """node : NODE NAME NEWLINE
+            | NEWLINE
     """
-    p[0] = nodes.Node(p[2])
+    p[0] = None if len(p) is 2 else nodes.Node(p[2])
 
 def p_empty(p):
     """empty :
