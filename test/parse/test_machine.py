@@ -49,8 +49,9 @@ class TestMachine(ParserTestCase):
 
             def trans_ab():
                 pass
-
-            ab = Transition(a, b, trans_ab)
+            
+            ab = Transition(a, b, lambda x: (x == '1') )
+            ab.on_enter += trans_ab
 
             m3 = Automaton([a,b],[ab],a)
 
@@ -77,9 +78,47 @@ class TestMachine(ParserTestCase):
             def trans_ab():
                 print("hello")
 
-            ab = Transition(a, b, trans_ab)
-
+            ab = Transition(a, b, lambda x: (x == '1') )
+            ab.on_enter += trans_ab
+            
             m4 = Automaton([a,b],[ab],a)
+
+            """)
+
+        self.assertAST(owl, python)
+
+
+    #@unittest.skip("Not yet implemented")
+    def test_machine_func(self):
+        owl = textwrap.dedent(r"""
+            machine m5 = {
+                node a
+                node b
+                enter(a) {
+                    print("world")
+                }
+                a("1") -> b {
+                    print("hello")
+                }
+            }
+            """)
+
+        python = textwrap.dedent(r"""
+            a = State()
+            b = State()
+
+            def func_a():
+                print("world")
+            
+            a.on_enter += func_a
+
+            def trans_ab():
+                print("hello")
+
+            ab = Transition(a, b, lambda x: (x == '1') )
+            ab.on_enter += trans_ab
+
+            m5 = Automaton([a,b],[ab],a)
 
             """)
 

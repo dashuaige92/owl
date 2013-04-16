@@ -237,6 +237,11 @@ def p_string(p):
     """
     p[0] = ast.Str(p[1][1:-1])
 
+def p_trans_string(p):
+    """trans_string : LIT_STRING
+        """
+    p[0] = p[1][1:-1]
+
 
 def p_list(p):
     """list : LBRACK parameters RBRACK
@@ -295,40 +300,11 @@ def p_machine(p):
 
 
 def p_machine_body(p):
-    """machine_body : node_decs transitions
-    """
-    p[0] = p[1] + p[2]
-
-def p_node_decs(p):
-    """node_decs : node
-                 | node_decs node
+    """machine_body : machine_body_stmt
+                    | machine_body machine_body_stmt
     """
     if len(p) == 2:
         p[0] = [p[1]] if p[1] is not None else []
-    elif len(p) == 3:
-        p[0] = p[1] + ([p[2]] if p[2] is not None else [])
-
-def p_node(p):
-    """node : NODE NAME NEWLINE
-            | NEWLINE
-    """
-    if len(p) == 4:
-        p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Call(ast.Name('State', ast.Load()), [], [], None, None))
-        machine_nodes.append(p[2])
-
-def p_transitions(p):
-    """transitions : transition
-                   | transitions transition
-    """
-
-    if len(p) == 2:
-        if p[1] is None:
-            p[0] = []
-        elif type(p[1]) is list:
-            p[0] = p[1]
-        else:
-            p[0] = [p[1]]
-
     elif len(p) == 3:
         if p[2] is None:
             p[0] = p[1]
@@ -336,13 +312,47 @@ def p_transitions(p):
             p[0] = p[1] + p[2]
         else:
             p[0] = p[1] + [p[2]]
-    
+
+def p_machine_body_stmt(p):
+    """machine_body_stmt : node
+                         | function
+                         | transition
+                         | NEWLINE
+    """
+
+    if p[1] != '\n':
+        p[0] = p[1]
+
+
+def p_node(p):
+    """node : NODE NAME NEWLINE
+    """
+    if len(p) == 4:
+        p[0] = ast.Assign([ast.Name(p[2], ast.Store())], ast.Call(ast.Name('State', ast.Load()), [], [], None, None))
+        machine_nodes.append(p[2])
+
+
+def p_function(p):
+    """function : three_es LPAREN NAME RPAREN LBRACE statement_list RBRACE
+    """ 
+
+    p[0] = []
+
+    p[0].append(ast.FunctionDef('func_'+p[3], ast.arguments([], None, None, []), p[6] if p[6] is not None else [ast.Pass()], []))
+
+    p[0].append(ast.AugAssign(ast.Attribute(ast.Name(p[3], ast.Load()), 'on_'+p[1], ast.Store()), ast.Add(), ast.Name('func_'+p[3], ast.Load())))
+
+def p_three_es(p):
+    """three_es : ENTER
+                | EXIT
+                | END
+    """
+
+    p[0] = p[1]
 
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
                   | NAME LPAREN string RPAREN ARROW NAME LBRACE statement_list RBRACE
-                  | NEWLINE
-                  |
     """
 
     if len(p) == 10:
@@ -353,11 +363,16 @@ def p_transition(p):
 
         p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), p[8] if p[8] is not None else [ast.Pass()], []))
 
-
         p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
                                                                                                         ast.Name(p[6], ast.Load()),
-                                                                                                        ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load()),
-                                                                                                        ], [], None, None)))
+                                                                                                        ast.Lambda(ast.arguments([ast.Name('x', ast.Param())], None, None, []),
+                                                                                                        ast.Compare(ast.Name('x', ast.Load()),[ ast.Eq()], [p[3]])),], [],
+                                                                                                        None, None)))
+        
+        p[0].append(ast.AugAssign(ast.Attribute(ast.Name(str(p[1])+str(p[6]), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load())))
+
+
+
 
     elif len(p) == 8:
         machine_trans.append(str(p[1])+str(p[6]))
@@ -367,15 +382,23 @@ def p_transition(p):
 
         p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), [ast.Pass()], []))
 
+
+        # p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
+        #                                                                                    ast.Name(p[6], ast.Load())],[],None, None)))
+
         p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
-                                                                                                    ast.Name(p[6], ast.Load()),
-                                                                                                    ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load()),
-                                                                                                    ], [], None, None)))
+                                                                                                        ast.Name(p[6], ast.Load()),
+                                                                                                        ast.Lambda(ast.arguments([ast.Name('x', ast.Param())], None, None, []),
+                                                                                                        ast.Compare(ast.Name('x', ast.Load()),[ ast.Eq()], [p[3]]))], [],
+                                                                                                        None, None)))
+
+        p[0].append(ast.AugAssign(ast.Attribute(ast.Name(str(p[1])+str(p[6]), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load())))
 
 
 
     else:
         pass
+
 
 def p_error(p):
     warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)

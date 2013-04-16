@@ -29,6 +29,10 @@ reserved = {
 
     'machine' : 'MACHINE',
     'node'    : 'NODE',
+    
+    'enter'    : 'ENTER',
+    'exit'    : 'EXIT',
+    'end'    : 'END',
 }
 
 tokens = tuple(reserved.values()) + (
