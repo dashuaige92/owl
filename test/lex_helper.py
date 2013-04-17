@@ -47,6 +47,4 @@ class LexerTestCase(unittest.TestCase):
             # We need to lex the whole string to get any errors
             [tok for tok in lexer]
             if len([issubclass(e.category, LexError) for e in w]) != error_count:
-                raise AssertionError(
-                    'Expected %d lex errors. Got %d.' % (error_count, lex_warnings)
-                )
+                raise AssertionError('Expected LexError not raised!')
