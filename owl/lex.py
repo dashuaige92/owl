@@ -81,6 +81,7 @@ t_DOT     = r'\.'
 t_ARROW     = r'->'
 
 t_ignore  = ' \t'
+t_ignore_COMMENT = '\#.*'
 
 def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
