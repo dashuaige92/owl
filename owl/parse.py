@@ -150,7 +150,7 @@ def p_function_call(p):
     else:
         if p[2] == '[':
             p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
-                slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
+                slice=ast.Index(value=nodes.Num(n=int(p[3]))), ctx=ast.Load())
         elif p[2] == '(':
             p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
@@ -180,13 +180,13 @@ def p_initialization(p):
 
 
         if p[1] == "int":
-            p[0] = ast.Assign([p[2]], ast.Num(0))
+            p[0] = ast.Assign([p[2]], nodes.Num(0))
                 
         elif p[1] == "bool":
             p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()))
                 
         elif p[1] == "float":
-            p[0] = ast.Assign([p[2]], ast.Num(0))
+            p[0] = ast.Assign([p[2]], nodes.Num(0))
 
         elif p[1] == "string":
             p[0] = ast.Assign([p[2]], ast.Str(""))
@@ -217,7 +217,7 @@ def p_type(p):
 def p_number(p):
     """number : LIT_NUMBER
     """
-    p[0] = ast.Num(int(p[1]))   
+    p[0] = nodes.Num(int(p[1]))   
 
 def p_string(p):
     """string : LIT_STRING

@@ -38,3 +38,9 @@ class Machine(ast.stmt):
         self.nodes = nodes
         self.functions = functions
         self.transitions = transitions
+
+class Num(ast.Num):
+    _attributes = ast.Num._attributes + ('type',)
+
+    def __init__(self, *args, **kwargs):
+        ast.Num.__init__(self, *args, **kwargs)
