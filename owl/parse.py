@@ -137,7 +137,7 @@ def p_function_call(p):
                      | NAME LPAREN parameters RPAREN
                      | NAME DOT NAME LPAREN parameters RPAREN
                      | NAME DOT NAME
-                     | NAME LBRACK LIT_NUMBER RBRACK
+                     | NAME LBRACK LIT_INT RBRACK
 
     """
     if p[1] == 'print':
@@ -147,7 +147,7 @@ def p_function_call(p):
     elif len(p) == 7:
         p[0] = ast.Call(func=ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
-    else:
+    elif len(p) == 5:
         if p[2] == '[':
             p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
                 slice=ast.Index(value=nodes.Num(n=int(p[3]))), ctx=ast.Load())
@@ -186,7 +186,7 @@ def p_initialization(p):
             p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()))
                 
         elif p[1] == "float":
-            p[0] = ast.Assign([p[2]], nodes.Num(0))
+            p[0] = ast.Assign([p[2]], nodes.Num(0.))
 
         elif p[1] == "string":
             p[0] = ast.Assign([p[2]], ast.Str(""))
@@ -214,10 +214,15 @@ def p_type(p):
 
     p[0] = p[1]
 
-def p_number(p):
-    """number : LIT_NUMBER
+def p_number_int(p):
+    """number : LIT_INT
     """
-    p[0] = nodes.Num(int(p[1]))   
+    p[0] = nodes.Num(int(p[1]))
+
+def p_number_float(p):
+    """number : LIT_FLOAT
+    """
+    p[0] = nodes.Num(float(p[1]))
 
 def p_string(p):
     """string : LIT_STRING

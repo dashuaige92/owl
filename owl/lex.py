@@ -34,7 +34,7 @@ reserved = {
 
 tokens = tuple(reserved.values()) + (
     # Literals
-    'LIT_STRING', 'LIT_NUMBER',
+    'LIT_STRING', 'LIT_INT', 'LIT_FLOAT',
 
     # Delimiters
     'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK', 'LBRACE', 'RBRACE', 'COMMA',
@@ -53,7 +53,8 @@ tokens = tuple(reserved.values()) + (
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
-t_LIT_NUMBER = r'[0-9]+'
+t_LIT_INT = r'[0-9]+'
+t_LIT_FLOAT = r'(([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))'
 
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
