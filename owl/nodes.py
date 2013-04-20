@@ -39,8 +39,27 @@ class Machine(ast.stmt):
         self.functions = functions
         self.transitions = transitions
 
-class Num(ast.Num):
-    _attributes = ast.Num._attributes + ('type',)
+# class Int(ast.expr):
+#     def __init__(self, *args, **kwargs):
+#         ast.Expr.__init__(self, *args, **kwargs)
+#         self.type = int
 
-    def __init__(self, *args, **kwargs):
-        ast.Num.__init__(self, *args, **kwargs)
+# class Bool(ast.expr):
+#     def __init__(self, *args, **kwargs):
+#         ast.Expr.__init__(self, *args, **kwargs)
+#         self.type = bool
+
+# class Float(ast.expr):
+#     def __init__(self, *args, **kwargs):
+#         ast.Expr.__init__(self, *args, **kwargs)
+#         self.type = float
+
+# class Str(ast.expr):
+#     def __init__(self, *args, **kwargs):
+#         ast.Expr.__init__(self, *args, **kwargs)
+#         self.type = str
+# class List(ast.expr):
+#     def __init__(self, *args, **kwargs):
+#         ast.Expr.__init__(self, *args, **kwargs)
+#         self.type = list
+

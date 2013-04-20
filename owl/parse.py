@@ -150,7 +150,7 @@ def p_function_call(p):
     elif len(p) == 5:
         if p[2] == '[':
             p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
-                slice=ast.Index(value=nodes.Num(n=int(p[3]))), ctx=ast.Load())
+                slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
         elif p[2] == '(':
             p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
@@ -179,29 +179,31 @@ def p_initialization(p):
         # this is for default initialization
 
 
-        if p[1] == "int":
-            p[0] = ast.Assign([p[2]], nodes.Num(0))
-                
-        elif p[1] == "bool":
-            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()))
-                
-        elif p[1] == "float":
-            p[0] = ast.Assign([p[2]], nodes.Num(0.))
+        if p[1] == int:
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=int)
 
-        elif p[1] == "string":
-            p[0] = ast.Assign([p[2]], ast.Str(""))
                 
-        elif p[1] == "list":
-            p[0] = ast.Assign([p[2]], ast.List(p[4],ast.Load())) #check correctness
+        elif p[1] == bool:
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()),
+                type=bool)
+                
+        elif p[1] == float:
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=float)
+
+        elif p[1] == str:
+            p[0] = ast.Assign([p[2]], ast.Str(""), type=str)
+                
+        elif p[1] == list:
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=list) #check correctness
 
         else:
-            print("err")
+            print("%s err" % (str(p[1])))
         
 
 
     else:
           #add type checking here
-          p[0] = ast.Assign([p[2]], p[4])
+          p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
 
 def p_type(p):
@@ -212,17 +214,29 @@ def p_type(p):
             | LIST
     """
 
-    p[0] = p[1]
+
+    if p[1] == 'int':
+        p[0] = int
+    elif p[1] == 'bool':
+        p[0] = bool
+    elif p[1] == 'float':
+        p[0] = float
+    elif p[1] == 'string':
+        p[0] = str
+    elif p[1] == 'list':
+        p[0] = list
+  
 
 def p_number_int(p):
     """number : LIT_INT
     """
-    p[0] = nodes.Num(int(p[1]))
+    p[0] = ast.Num(int(p[1]))
 
 def p_number_float(p):
     """number : LIT_FLOAT
     """
-    p[0] = nodes.Num(float(p[1]))
+
+    p[0] = ast.Num(float(p[1]))
 
 def p_string(p):
     """string : LIT_STRING
