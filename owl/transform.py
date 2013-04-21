@@ -117,9 +117,46 @@ class MachineCodeGenerator(ast.NodeTransformer):
         transitions.append(val)
         return val
 
-def transform(tree, filters=[]):
+class TypeChecker(ast.NodeTransformer):
+    def visit_Name(self, node):
+        # Check bool
+        if node.id == 'True' or node.id == 'False':
+            node.type = bool
+        # Other ast.Name nodes
+        return node
 
-    for Transformer in [StandardLibraryAdder, MachineCodeGenerator]:
+    def visit_Num(self, node):
+        if isinstance(node.n, int):
+            node.type = int
+        elif isinstance(node.n, float):
+            node.type = float
+        else:
+            warnings.warn('%s is not a valid number' % (str(node.n)), TransformError)
+        return node
+
+    def visit_Str(self, node):
+        if not isinstance(node.s, str):
+            warnings.warn('%s is not a valid number' % (str(node.s)), TransformError)
+
+        node.type = str
+        return node
+
+    def visit_Assign(self, node):
+        # Assign node must have type set in parse.py
+        self.generic_visit(node)
+        if node.type != node.value.type:
+            warnings.warn("""Cannot assign type %s
+                to variable of type %s""" % (str(node.value.type),
+                    str(node.type)), TransformError)
+        return node
+
+    # Do nothing
+
+    def visit_List(self, node):
+        return node
+
+def transform(tree, filters=[]):
+    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ]:
         if Transformer not in filters:
             tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)

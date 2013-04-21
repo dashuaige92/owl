@@ -35,6 +35,7 @@ def p_statement(p):
                  | iteration
                  | selection_statement
                  | machine
+                 | function_def
     """
     if p[1] == "\n":
         p[0] = None
@@ -132,12 +133,36 @@ def p_statement_list(p):
         else:
             p[0] = ([p[2]] if p[2] is not None else [])
 
+def p_function_def(p):
+    """function_def : type NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+                    | VOID NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+    """
+    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[4], vararg=None, kwarg=None, defaults=[]), body=p[7], decorator_list=[], type=p[1])
+
+def p_params_def_list(p):
+    """params_def_list : params_def
+                       | params_def COMMA params_def_list
+                       
+    """
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = list(p[3]).insert(0, p[1])
+
+def p_params_def(p):
+    """params_def : type NAME
+    """
+    if len(p) != 1:
+        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
+    else:
+        p[0] = None
+
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
                      | NAME LPAREN parameters RPAREN
                      | NAME DOT NAME LPAREN parameters RPAREN
                      | NAME DOT NAME
-                     | NAME LBRACK LIT_NUMBER RBRACK
+                     | NAME LBRACK LIT_INT RBRACK
 
     """
     if p[1] == 'print':
@@ -147,7 +172,7 @@ def p_function_call(p):
     elif len(p) == 7:
         p[0] = ast.Call(func=ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
-    else:
+    elif len(p) == 5:
         if p[2] == '[':
             p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
                 slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
@@ -179,29 +204,31 @@ def p_initialization(p):
         # this is for default initialization
 
 
-        if p[1] == "int":
-            p[0] = ast.Assign([p[2]], ast.Num(0))
-                
-        elif p[1] == "bool":
-            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()))
-                
-        elif p[1] == "float":
-            p[0] = ast.Assign([p[2]], ast.Num(0))
+        if p[1] == int:
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=int)
 
-        elif p[1] == "string":
-            p[0] = ast.Assign([p[2]], ast.Str(""))
                 
-        elif p[1] == "list":
-            p[0] = ast.Assign([p[2]], ast.List(p[4],ast.Load())) #check correctness
+        elif p[1] == bool:
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()),
+                type=bool)
+                
+        elif p[1] == float:
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=float)
+
+        elif p[1] == str:
+            p[0] = ast.Assign([p[2]], ast.Str(""), type=str)
+                
+        elif p[1] == list:
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=list) #check correctness
 
         else:
-            print("err")
+            print("%s err" % (str(p[1])))
         
 
 
     else:
           #add type checking here
-          p[0] = ast.Assign([p[2]], p[4])
+          p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
 
 def p_type(p):
@@ -212,12 +239,28 @@ def p_type(p):
             | LIST
     """
 
-    p[0] = p[1]
 
-def p_number(p):
-    """number : LIT_NUMBER
+    if p[1] == 'int':
+        p[0] = int
+    elif p[1] == 'bool':
+        p[0] = bool
+    elif p[1] == 'float':
+        p[0] = float
+    elif p[1] == 'string':
+        p[0] = str
+    elif p[1] == 'list':
+        p[0] = list
+  
+def p_number_int(p):
+    """number : LIT_INT
     """
-    p[0] = ast.Num(int(p[1]))   
+    p[0] = ast.Num(int(p[1]))
+
+def p_number_float(p):
+    """number : LIT_FLOAT
+    """
+
+    p[0] = ast.Num(float(p[1]))
 
 def p_string(p):
     """string : LIT_STRING
@@ -301,7 +344,6 @@ def p_machine_body_stmt(p):
 
 def p_node(p):
     """node : NODE NAME NEWLINE
-            |
     """
     p[0] = None if len(p) is 2 else nodes.Node(p[2])
 
@@ -330,7 +372,6 @@ def p_three_es(p):
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
                   | NAME LPAREN string RPAREN ARROW NAME LBRACE statement_list RBRACE
-                  | empty
     """
     if len(p) == 8:
         p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[])
@@ -384,11 +425,6 @@ def p_transition(p):
         pass
         
     """
-
-def p_empty(p):
-    """empty :
-    """
-    pass
 
 
 

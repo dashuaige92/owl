@@ -28,7 +28,7 @@ class TestFunctionCall(LexerTestCase):
 			('.', 'DOT'),
 			('run', 'NAME'),
 			('(', 'LPAREN'),
-			('3', 'LIT_NUMBER'),
+			('3', 'LIT_INT'),
 			(')', 'RPAREN'),
 		)
 	
@@ -37,7 +37,7 @@ class TestFunctionCall(LexerTestCase):
 			'my_list[0]',
 			('my_list', 'NAME'),
 			('[', 'LBRACK'),
-			('0', 'LIT_NUMBER'),
+			('0', 'LIT_INT'),
 			(']', 'RBRACK'),
 		)
 	

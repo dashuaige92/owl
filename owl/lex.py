@@ -12,6 +12,7 @@ reserved = {
     'true'    : 'TRUE' ,
     'false'   : 'FALSE' ,
 
+    'void'    : 'VOID',
     'int'     : 'INT',
     'bool'    : 'BOOL',
     'float'   : 'FLOAT',
@@ -38,7 +39,7 @@ reserved = {
 
 tokens = tuple(reserved.values()) + (
     # Literals
-    'LIT_STRING', 'LIT_NUMBER',
+    'LIT_STRING', 'LIT_INT', 'LIT_FLOAT',
 
     # Delimiters
     'LPAREN', 'RPAREN', 'LBRACK', 'RBRACK', 'LBRACE', 'RBRACE', 'COMMA',
@@ -57,7 +58,8 @@ tokens = tuple(reserved.values()) + (
 )
 
 t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
-t_LIT_NUMBER = r'[0-9]+'
+t_LIT_INT = r'[0-9]+'
+t_LIT_FLOAT = r'(([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))'
 
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
@@ -85,6 +87,7 @@ t_DOT     = r'\.'
 t_ARROW     = r'->'
 
 t_ignore  = ' \t'
+t_ignore_COMMENT = '\#.*'
 
 def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
