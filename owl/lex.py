@@ -12,6 +12,7 @@ reserved = {
     'true'    : 'TRUE' ,
     'false'   : 'FALSE' ,
 
+    'void'    : 'VOID',
     'int'     : 'INT',
     'bool'    : 'BOOL',
     'float'   : 'FLOAT',
