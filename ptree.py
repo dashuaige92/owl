@@ -11,3 +11,5 @@ from lib import astpp
 if __name__ == '__main__':
     tree = parse.build_tree(sys.argv)
     print astpp.dump(tree)
+    print 'Symbol table:'
+    print tree.symbol_table

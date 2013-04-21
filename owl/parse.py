@@ -15,6 +15,12 @@ precedence = (
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
 
+# Symbol table for scope tracking
+symbol_table = {
+    # Example entry
+    # 'myvar' : (1, 3, 5)
+}
+
 def p_program(p):
     """program : code_block
     """
@@ -282,12 +288,12 @@ def p_list(p):
         p[0] = ast.List(p[2], ast.Load())
 
     elif p[1] == 'range' and p[4] == ',':
-        p[0] = value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=[
+        p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[
         p[3],p[5]
       ], keywords=[], starargs=None, kwargs=None)
 
     else:
-        p[0] = value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=[
+        p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[
         p[3],
       ], keywords=[], starargs=None, kwargs=None)
 
@@ -433,6 +439,20 @@ def p_error(p):
 
 parser = yacc.yacc()
 
+def parse(string):
+    """Parse Owl source code and return the AST with symbol_table attached.
+
+    NOTE: Make sure you call this instead of parser.parse() if you need the
+          generated symbol table.
+    """
+    # Reset the symbol_table in the global scope in case we're reusing it.
+    global symbol_table
+    symbol_table = {}
+
+    tree = parser.parse(string)
+    tree.symbol_table = symbol_table
+    return tree
+
 def build_tree(args):
     """Build an AST tree from expected command line args.
 
@@ -441,9 +461,9 @@ def build_tree(args):
     args[1] = None for reading stdin.
     """
     if len(args) > 1:
-        tree = parser.parse(open(args[1]).read())
+        tree = parse(open(args[1]).read())
     else:
-        tree = parser.parse(sys.stdin.read())
+        tree = parse(sys.stdin.read())
     tree = ast.fix_missing_locations(tree)
     return tree
 
