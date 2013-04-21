@@ -3,3 +3,6 @@ class LexError(Warning):
 
 class ParseError(Warning):
     pass
+
+class TransformError(Warning):
+    pass

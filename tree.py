@@ -4,10 +4,8 @@ Usage: python tree.py [owl-source-file]
 """
 
 import sys
-import ast
 
 from owl import transform
-from lib.codegen import to_source
 from lib import astpp
 
 if __name__ == '__main__':
