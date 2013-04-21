@@ -35,6 +35,7 @@ def p_statement(p):
                  | iteration
                  | selection_statement
                  | machine
+                 | function_def
     """
     if p[1] == "\n":
         p[0] = None
@@ -133,13 +134,15 @@ def p_statement_list(p):
             p[0] = ([p[2]] if p[2] is not None else [])
 
 def p_function_def(p):
-    """function_def : return_type NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+    """function_def : type NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+                    | VOID NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
     """
-    p[0] = ast.FunctionDef # how to do this with return type?
+    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[4], vararg=None, kwarg=None, defaults=[]), body=p[7], decorator_list=[], type=p[1])
 
 def p_params_def_list(p):
     """params_def_list : params_def
                        | params_def COMMA params_def_list
+                       
     """
     if len(p) == 2:
         p[0] = [p[1]]
@@ -149,7 +152,10 @@ def p_params_def_list(p):
 def p_params_def(p):
     """params_def : type NAME
     """
-    # how to do this with return type?
+    if len(p) != 1:
+        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
+    else:
+        p[0] = None
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
@@ -224,6 +230,7 @@ def p_initialization(p):
           #add type checking here
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
+
 def p_type(p):
     """type : INT
             | BOOL
@@ -244,13 +251,6 @@ def p_type(p):
     elif p[1] == 'list':
         p[0] = list
   
-
-def p_return_type(p):
-    """return_type : type
-                   | VOID
-    """
-    p[0] = p[1]
-
 def p_number_int(p):
     """number : LIT_INT
     """

@@ -5,12 +5,14 @@ from test.parse_helper import ParserTestCase
 
 class TestFunctionDef(ParserTestCase):
 
-	#@unittest.skip("not done yet")
 	def test_function_def(self):
 		owl = textwrap.dedent(r"""
+			string test(string x) {
+				print(x)
+			}
 			""")
 		python = textwrap.dedent(r"""
 			def test(x):
-				pass
+				print x
 			""")
 		self.assertAST(owl, python)
