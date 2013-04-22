@@ -29,7 +29,7 @@ class TestMachine(TransformTestCase):
         
         self.assertTransformedAST(owl, python)
 
-    @unittest.skip("Refactoring")
+    #@unittest.skip("Refactoring")
     def test_machine_trans(self):
         owl = textwrap.dedent(r"""
             machine m3 = {
@@ -43,19 +43,19 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
 
-            def trans_ab():
+            def trans_a_b():
                 pass
             
-            ab = Transition(a, b, lambda x: (x == '1') )
-            ab.on_enter += trans_ab
+            _a_b = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b.on_enter += trans_a_b
 
-            m3 = Automaton([a,b],[ab],a)
+            m3 = Automaton([a,b],[_a_b],a)
 
             """)
 
         self.assertTransformedAST(owl, python)
 
-    @unittest.skip("Refactoring")
+    #@unittest.skip("Refactoring")
     def test_machine_trans_2(self):
         owl = textwrap.dedent(r"""
             machine m4 = {
@@ -71,20 +71,20 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
             
-            def trans_ab():
+            def trans_a_b():
                 print("hello")
 
-            ab = Transition(a, b, lambda x: (x == '1') )
-            ab.on_enter += trans_ab
+            _a_b = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b.on_enter += trans_a_b
             
-            m4 = Automaton([a,b],[ab],a)
+            m4 = Automaton([a,b],[_a_b],a)
 
             """)
 
         self.assertTransformedAST(owl, python)
 
 
-    @unittest.skip("Not yet implemented")
+    #@unittest.skip("Not yet implemented")
     def test_machine_func(self):
         owl = textwrap.dedent(r"""
             machine m5 = {
@@ -108,16 +108,16 @@ class TestMachine(TransformTestCase):
             
             a.on_enter += func_a
 
-            def trans_ab():
+            def trans_a_b():
                 print("hello")
 
-            ab = Transition(a, b, lambda x: (x == '1') )
-            ab.on_enter += trans_ab
+            _a_b = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b.on_enter += trans_a_b
 
-            m5 = Automaton([a,b],[ab],a)
+            m5 = Automaton([a,b],[_a_b],a)
 
             """)
 
-        self.assertAST(owl, python)
+        self.assertTransformedAST(owl, python)
 
 

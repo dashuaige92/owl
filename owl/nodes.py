@@ -6,6 +6,14 @@ class Node(ast.stmt):
     def __init__(self, name):
         self.name = name
 
+class Function(ast.stmt):
+    _fields = ('e', 'name', 'body')
+
+    def __init__(self, e, name, body=[]):
+        self.e = e
+        self.name = name
+        self.body = body
+
 class Transition(ast.stmt):
     _fields = ('left', 'arg', 'right', 'body')
 

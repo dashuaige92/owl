@@ -354,11 +354,14 @@ def p_function(p):
     """function : three_es LPAREN NAME RPAREN LBRACE statement_list RBRACE
     """ 
 
-    p[0] = []
+    #p[0] = []
 
-    p[0].append(ast.FunctionDef('func_'+p[3], ast.arguments([], None, None, []), p[6] if p[6] is not None else [ast.Pass()], []))
+    #p[0].append(ast.FunctionDef('func_'+p[3], ast.arguments([], None, None, []), p[6] if p[6] is not None else [ast.Pass()], []))
 
-    p[0].append(ast.AugAssign(ast.Attribute(ast.Name(p[3], ast.Load()), 'on_'+p[1], ast.Store()), ast.Add(), ast.Name('func_'+p[3], ast.Load())))
+    #p[0].append(ast.AugAssign(ast.Attribute(ast.Name(p[3], ast.Load()), 'on_'+p[1], ast.Store()), ast.Add(), ast.Name('func_'+p[3], ast.Load())))
+
+    p[0] = nodes.Function(e=p[1], name=p[3], body=p[6])
+
 
 def p_three_es(p):
     """three_es : ENTER

@@ -88,9 +88,40 @@ class MachineCodeGenerator(ast.NodeTransformer):
 
 
     def visit_Function(self, node):
-        pass
+
+        if node.body is None:
+            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [ast.Pass()], [])
+
+        elif type(node.body) is not list:
+            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [node.body], [])
+
+        elif len(node.body) is 0:
+            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [ast.Pass()], [])
+
+        else:
+            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), node.body, [])
+
+
+        ass = ast.AugAssign(ast.Attribute(ast.Name('%s' % node.name, ast.Load()), 'on_%s' % node.e, ast.Store()), ast.Add(), ast.Name('func_%s' % node.name, ast.Load()))
+
+        return [fun, ass]
 
     def visit_Transition(self, node):
+
+
+        if node.body is None:
+            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), [ast.Pass()], [])
+
+        elif type(node.body) is not list:
+            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), [node.body], [])
+
+        elif len(node.body) is 0:
+            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), [ast.Pass()], [])
+        
+        else:
+            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), node.body, [])
+
+                
         val = ast.copy_location(ast.Assign(
             targets=[ast.Name(
                 id='_%s_%s' % (node.left, node.right),
@@ -114,8 +145,13 @@ class MachineCodeGenerator(ast.NodeTransformer):
                 kwargs=None,
             )
         ), node)
+
+
+        ass = ast.AugAssign(ast.Attribute(ast.Name('_%s_%s' % (node.left, node.right), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_%s_%s' % (node.left, node.right), ast.Load()))
+
+
         transitions.append(val)
-        return val
+        return [fun, val, ass]
 
 class TypeChecker(ast.NodeTransformer):
     def visit_Name(self, node):
