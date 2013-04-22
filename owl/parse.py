@@ -15,11 +15,32 @@ precedence = (
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
 
-# Symbol table for scope tracking
+# Symbol Table
+
 symbol_table = {
     # Example entry
-    # 'myvar' : (1, 3, 5)
+    # 'myvar' : None
+    # 'myfunc' : { 'x' : None }
 }
+scope_stack = []
+def current_scope():
+    """Get the symbol_table of the current scope stack.
+    """
+    scope = symbol_table
+    for name in scope_stack:
+        scope = scope[name]
+    return scope
+
+def push_scope(name):
+    global symbol_table
+    symbol_table[name] = {}
+    scope_stack.append(name)
+
+def pop_scope():
+    scope_stack.pop()
+
+
+# Parsing Rules
 
 def p_program(p):
     """program : code_block
@@ -165,25 +186,25 @@ def p_params_def(p):
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
-                     | NAME LPAREN parameters RPAREN
-                     | NAME DOT NAME LPAREN parameters RPAREN
-                     | NAME DOT NAME
-                     | NAME LBRACK LIT_INT RBRACK
+                     | variable_load LPAREN parameters RPAREN
+                     | variable_load DOT NAME LPAREN parameters RPAREN
+                     | variable_load DOT NAME
+                     | variable_load LBRACK LIT_INT RBRACK
 
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True)
     elif len(p) == 4:
-        p[0] = ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), attr=p[3], ctx=ast.Load())
+        p[0] = ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
     elif len(p) == 7:
-        p[0] = ast.Call(func=ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), \
+        p[0] = ast.Call(func=ast.Attribute(value=p[1], \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
         if p[2] == '[':
-            p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
+            p[0] = ast.Subscript(value=p[1], \
                 slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
         elif p[2] == '(':
-            p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), \
+            p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
         # Owl doesn't have keyword arguments, *args, or *kwargs
 
@@ -306,6 +327,7 @@ def p_bool(p):
     else:
         p[0] = ast.Name("False", ast.Load())
 
+# Use variable_store and variable_load instead of NAME for variables
 def p_variable_store(p):
     """variable_store : NAME
     """
@@ -313,7 +335,7 @@ def p_variable_store(p):
 
 def p_variable_load(p):
     """variable_load : NAME
-        """
+    """
     p[0] = ast.Name(p[1], ast.Load())
 
 def p_machine(p):
