@@ -172,17 +172,19 @@ def p_params_def_list(p):
                        
     """
     if len(p) == 2:
-        p[0] = [p[1]]
+        if p[1] is None:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
     else:
         p[0] = list(p[3]).insert(0, p[1])
 
 def p_params_def(p):
     """params_def : type NAME
+                  | 
     """
     if len(p) != 1:
         p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
-    else:
-        p[0] = None
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
