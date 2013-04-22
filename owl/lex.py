@@ -12,7 +12,13 @@ reserved = {
     'true'    : 'TRUE' ,
     'false'   : 'FALSE' ,
 
+
     'void'    : 'VOID',
+
+    'not'     : 'NOT',
+    'and'     : 'AND',
+    'or'      : 'OR',
+
     'int'     : 'INT',
     'bool'    : 'BOOL',
     'float'   : 'FLOAT',
@@ -51,7 +57,8 @@ tokens = tuple(reserved.values()) + (
     # Operators
     'EQUAL',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULO',
-    'EQ', 'NEQ', 'LT', 'LTEQ', 'GT', 'GTEQ',
+    'EQ', 'PEQUAL', 'MEQUAL', 'TEQUAL', 'DEQUAL',
+    'NEQ', 'LT', 'LTEQ', 'GT', 'GTEQ',
     'DOT',
 
     'ARROW',
@@ -71,6 +78,10 @@ t_COMMA   = r','
 t_NEWLINE = r'\n'
 
 t_EQUAL   = r'='
+t_PEQUAL  = r'\+='
+t_MEQUAL  = r'-='
+t_TEQUAL  = r'\*='
+t_DEQUAL  = r'/='
 t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'

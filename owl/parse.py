@@ -11,6 +11,7 @@ from errors import ParseError
 tokens = lex.tokens
 precedence = (
     ('left', 'EQ', 'NEQ', 'LT', 'LTEQ', 'GT', 'GTEQ'),
+    ('left', 'AND', 'OR'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
@@ -59,6 +60,7 @@ def p_code_block(p):
 def p_statement(p):
     """statement : NEWLINE
                  | initialization NEWLINE
+                 | assignment NEWLINE
                  | iteration
                  | selection_statement
                  | machine
@@ -79,6 +81,8 @@ def p_expression(p):
     """expression : function_call
                   | arithmetic_expression
                   | comparison_expression
+                  | boolean_expression
+                  | unary_expression
                   | string
                   | number
                   | bool
@@ -126,6 +130,28 @@ def p_comparison_expression(p):
         left=p[1],
         ops=[operators[p[2]]],
         comparators=[p[3]])
+
+def p_boolean_expression(p):
+    """boolean_expression : expression AND expression
+                          | expression OR expression
+
+    """
+    if p[2] == 'and':
+        p[0] = ast.BoolOp(op=ast.And(), values=[p[1], p[3]])
+    else:
+        p[0] = ast.BoolOp(op=ast.Or(), values=[p[1], p[3]])
+
+def p_unary_expression(p):
+    """unary_expression : MINUS expression
+                        | NOT expression
+
+    """
+
+    if p[1] == 'not':
+        p[0] = ast.UnaryOp(op=ast.Not(), operand=p[2])
+    else:
+        p[0] = ast.UnaryOp(op=ast.USub(), operand=p[2])
+
 
 def p_iteration(p):
     """iteration : WHILE LPAREN expression RPAREN LBRACE statement_list RBRACE
@@ -259,6 +285,26 @@ def p_initialization(p):
           #add type checking here
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
+def p_assignment(p):
+    """assignment : NAME EQUAL expression
+                  | NAME PEQUAL expression
+                  | NAME MEQUAL expression
+                  | NAME TEQUAL expression
+                  | NAME DEQUAL expression
+    """
+    operators = {
+        '=' : ast.Eq(),
+        '+=': ast.Add(),
+        '-=': ast.Sub(),
+        '*=': ast.Mult(),
+        '/=': ast.Div(),
+    }
+
+    if p[2] == '=':
+        p[0] = ast.Assign(targets=[ast.Name(id=p[1], ctx=ast.Store())], value=p[3])
+    else:
+        p[0] = ast.AugAssign(target=ast.Name(id=p[1], ctx=ast.Store()),
+        op=operators[p[2]], value=p[3])
 
 def p_type(p):
     """type : INT
