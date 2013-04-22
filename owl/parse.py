@@ -15,6 +15,33 @@ precedence = (
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
 )
 
+# Symbol Table
+
+symbol_table = {
+    # Example entry
+    # 'myvar' : None
+    # 'myfunc' : { 'x' : None }
+}
+scope_stack = []
+def current_scope():
+    """Get the symbol_table of the current scope stack.
+    """
+    scope = symbol_table
+    for name in scope_stack:
+        scope = scope[name]
+    return scope
+
+def push_scope(name):
+    global symbol_table
+    symbol_table[name] = {}
+    scope_stack.append(name)
+
+def pop_scope():
+    scope_stack.pop()
+
+
+# Parsing Rules
+
 def p_program(p):
     """program : code_block
     """
@@ -145,39 +172,41 @@ def p_params_def_list(p):
                        
     """
     if len(p) == 2:
-        p[0] = [p[1]]
+        if p[1] is None:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
     else:
         p[0] = list(p[3]).insert(0, p[1])
 
 def p_params_def(p):
     """params_def : type NAME
+                  | 
     """
     if len(p) != 1:
         p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
-    else:
-        p[0] = None
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
-                     | NAME LPAREN parameters RPAREN
-                     | NAME DOT NAME LPAREN parameters RPAREN
-                     | NAME DOT NAME
-                     | NAME LBRACK LIT_INT RBRACK
+                     | variable_load LPAREN parameters RPAREN
+                     | variable_load DOT NAME LPAREN parameters RPAREN
+                     | variable_load DOT NAME
+                     | variable_load LBRACK LIT_INT RBRACK
 
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True)
     elif len(p) == 4:
-        p[0] = ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), attr=p[3], ctx=ast.Load())
+        p[0] = ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
     elif len(p) == 7:
-        p[0] = ast.Call(func=ast.Attribute(value=ast.Name(id=p[1], ctx=ast.Load()), \
+        p[0] = ast.Call(func=ast.Attribute(value=p[1], \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
         if p[2] == '[':
-            p[0] = ast.Subscript(value=ast.Name(id=p[1], ctx=ast.Load()), \
+            p[0] = ast.Subscript(value=p[1], \
                 slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
         elif p[2] == '(':
-            p[0] = ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), \
+            p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
         # Owl doesn't have keyword arguments, *args, or *kwargs
 
@@ -282,12 +311,12 @@ def p_list(p):
         p[0] = ast.List(p[2], ast.Load())
 
     elif p[1] == 'range' and p[4] == ',':
-        p[0] = value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=[
+        p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[
         p[3],p[5]
       ], keywords=[], starargs=None, kwargs=None)
 
     else:
-        p[0] = value=ast.Call(func=ast.Name(id=p[1], ctx=ast.Load()), args=[
+        p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[
         p[3],
       ], keywords=[], starargs=None, kwargs=None)
 
@@ -300,6 +329,7 @@ def p_bool(p):
     else:
         p[0] = ast.Name("False", ast.Load())
 
+# Use variable_store and variable_load instead of NAME for variables
 def p_variable_store(p):
     """variable_store : NAME
     """
@@ -307,7 +337,7 @@ def p_variable_store(p):
 
 def p_variable_load(p):
     """variable_load : NAME
-        """
+    """
     p[0] = ast.Name(p[1], ast.Load())
 
 def p_machine(p):
@@ -436,6 +466,20 @@ def p_error(p):
 
 parser = yacc.yacc()
 
+def parse(string):
+    """Parse Owl source code and return the AST with symbol_table attached.
+
+    NOTE: Make sure you call this instead of parser.parse() if you need the
+          generated symbol table.
+    """
+    # Reset the symbol_table in the global scope in case we're reusing it.
+    global symbol_table
+    symbol_table = {}
+
+    tree = parser.parse(string)
+    tree.symbol_table = symbol_table
+    return tree
+
 def build_tree(args):
     """Build an AST tree from expected command line args.
 
@@ -444,9 +488,9 @@ def build_tree(args):
     args[1] = None for reading stdin.
     """
     if len(args) > 1:
-        tree = parser.parse(open(args[1]).read())
+        tree = parse(open(args[1]).read())
     else:
-        tree = parser.parse(sys.stdin.read())
+        tree = parse(sys.stdin.read())
     tree = ast.fix_missing_locations(tree)
     return tree
 
