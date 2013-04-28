@@ -14,6 +14,7 @@ precedence = (
     ('left', 'AND', 'OR'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
+    ('right', 'UMINUS', 'NOT'),
 )
 
 # Symbol Table
@@ -142,9 +143,8 @@ def p_boolean_expression(p):
         p[0] = ast.BoolOp(op=ast.Or(), values=[p[1], p[3]])
 
 def p_unary_expression(p):
-    """unary_expression : MINUS expression
+    """unary_expression : MINUS expression %prec UMINUS
                         | NOT expression
-
     """
 
     if p[1] == 'not':
