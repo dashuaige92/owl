@@ -2,7 +2,7 @@ import unittest
 import ast
 import warnings
 
-from owl.parse import parser
+from owl import parse
 from owl import transform
 from owl.errors import ParseError, TransformError
 import lib.astpp as astpp
@@ -13,9 +13,12 @@ class ParserTestCase(unittest.TestCase):
     def assertAST(self, owl_source, python_source):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
-            owl_tree = parser.parse(owl_source)
+            owl_tree = parse.parse(owl_source)
             if any(issubclass(e.category, ParseError) for e in w):
-                raise AssertionError('Unexpected ParseError in Owl source!')
+                raise AssertionError(
+                    'Unexpected ParseError in Owl source!\n' +
+                    '\n'.join(str(e.message) for e in w)
+                )
         owl_dump = astpp.dump(owl_tree)
 
         try:
@@ -34,7 +37,7 @@ class ParserTestCase(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
-            parser.parse(owl_source)
+            parse.parse(owl_source)
             if not any(issubclass(e.category, ParseError) for e in w):
                 raise AssertionError('Expected ParseError not raised!')
 
@@ -47,12 +50,18 @@ class TransformTestCase(ParserTestCase):
             warnings.simplefilter('always')
 
             # Build the AST and apply transformations.
-            owl_tree = parser.parse(owl_source)
+            owl_tree = parse.parse(owl_source)
             owl_tree = transform.transform(owl_tree, transform_filters)
             if any(issubclass(e.category, ParseError) for e in w):
-                raise AssertionError('Unexpected ParseError in Owl source!')
+                raise AssertionError(
+                    'Unexpected ParseError in Owl source!\n' +
+                    '\n'.join(str(e.message) for e in w)
+                )
             if any(issubclass(e.category, TransformError) for e in w):
-                raise AssertionError('Unexpected TransformError in Owl source!')
+                raise AssertionError(
+                    'Unexpected TransformError in Owl source!\n' +
+                    '\n'.join(str(e.message) for e in w)
+                )
         owl_dump = astpp.dump(owl_tree)
 
         try:
@@ -71,9 +80,12 @@ class TransformTestCase(ParserTestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
-            owl_tree = parser.parse(owl_source)
+            owl_tree = parse.parse(owl_source)
             owl_tree = transform.transform(owl_tree)
             if any(issubclass(e.category, ParseError) for e in w):
-                raise AssertionError('Unexpected ParseError in Owl source!')
+                raise AssertionError(
+                    'Unexpected ParseError in Owl source!\n' +
+                    '\n'.join(str(e.message) for e in w)
+                )
             if not any(issubclass(e.category, TransformError) for e in w):
                 raise AssertionError('Expected TransformError not raised!')
