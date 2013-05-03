@@ -20,27 +20,23 @@ precedence = (
 # Symbol Table
 
 symbol_table = {
-    # Example entry
-    # 'myvar' : None
-    # 'myfunc' : { 'x' : None }
+    # Example entries
+    # 'myvar' : int
+    # 'myfunc' : { 'x' : list }
 }
-scope_stack = []
-def current_scope():
-    """Get the symbol_table of the current scope stack.
-    """
-    scope = symbol_table
-    for name in scope_stack:
-        scope = scope[name]
-    return scope
+symbol_stack = []
+
+def all_names():
+    """Get all identifiers visible in the current scope."""
+    return [var for scope in symbol_stack for var in scope]
 
 def push_scope(name):
     global symbol_table
     symbol_table[name] = {}
-    scope_stack.append(name)
+    symbol_stack.append([])
 
 def pop_scope():
-    scope_stack.pop()
-
+    symbol_stack.pop()
 
 # Parsing Rules
 
@@ -187,10 +183,11 @@ def p_statement_list(p):
             p[0] = ([p[2]] if p[2] is not None else [])
 
 def p_function_def(p):
-    """function_def : type NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
-                    | VOID NAME LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+    """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+                    | VOID NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
     """
-    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[4], vararg=None, kwarg=None, defaults=[]), body=p[7], decorator_list=[], type=p[1])
+    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1])
+    pop_scope()
 
 def p_params_def_list(p):
     """params_def_list : params_def
@@ -254,6 +251,8 @@ def p_initialization(p):
     """initialization : type variable_store EQUAL expression
                       | type variable_store
     """
+    if p[2] in current_scope():
+        warnings.warn("%s has not been declared!" % (p[1],), ParseError)
 
     if len(p) == 3:
         # this is for default initialization
@@ -261,26 +260,17 @@ def p_initialization(p):
 
         if p[1] == int:
             p[0] = ast.Assign([p[2]], ast.Num(0), type=int)
-
-                
         elif p[1] == bool:
             p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()),
                 type=bool)
-                
         elif p[1] == float:
             p[0] = ast.Assign([p[2]], ast.Num(0), type=float)
-
         elif p[1] == str:
             p[0] = ast.Assign([p[2]], ast.Str(""), type=str)
-                
         elif p[1] == list:
             p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=list) #check correctness
-
         else:
             print("%s err" % (str(p[1])))
-        
-
-
     else:
           #add type checking here
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
@@ -313,8 +303,6 @@ def p_type(p):
             | STRING
             | LIST
     """
-
-
     if p[1] == 'int':
         p[0] = int
     elif p[1] == 'bool':
@@ -334,7 +322,6 @@ def p_number_int(p):
 def p_number_float(p):
     """number : LIT_FLOAT
     """
-
     p[0] = ast.Num(float(p[1]))
 
 def p_string(p):
@@ -346,7 +333,6 @@ def p_trans_string(p):
     """trans_string : LIT_STRING
         """
     p[0] = p[1][1:-1]
-
 
 def p_list(p):
     """list : LBRACK parameters RBRACK
@@ -405,8 +391,6 @@ def p_machine_body(p):
         else:
             p[0] = p[1] + [p[2]]
 
-    #print p[0]
-
 def p_machine_body_stmt(p):
     """machine_body_stmt : node
                          | function
@@ -422,9 +406,6 @@ def p_node(p):
     """node : NODE NAME NEWLINE
     """
     p[0] = None if len(p) is 2 else nodes.Node(p[2])
-
-    #print p[0]
-
 
 def p_function(p):
     """function : three_es LPAREN NAME RPAREN LBRACE statement_list RBRACE
@@ -446,7 +427,6 @@ def p_three_es(p):
     """
 
     p[0] = p[1]
-
 
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
@@ -506,6 +486,11 @@ def p_transition(p):
     """
 
 
+def p_new_scope(p):
+    """new_scope :
+    """
+    push_scope(p[-1])
+    p[0] = p[-1]
 
 def p_error(p):
     warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)
