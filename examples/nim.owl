@@ -39,6 +39,11 @@ machine nim = {
             goto(dead)
         }
     }
+
+    # Need default transition
+    move() -> move {
+        print("Invalid input")
+    }
 }
 
 # Need state detection
