@@ -13,3 +13,4 @@ if __name__ == '__main__':
     print astpp.dump(tree)
     print 'Symbol table:'
     print tree.symbol_table
+    print tree.symbol_stack

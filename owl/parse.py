@@ -1,7 +1,6 @@
 import sys
 import ast
 import warnings
-import logging
 
 import ply.yacc as yacc
 
@@ -23,33 +22,55 @@ precedence = (
 symbol_table = {
     # Example entries
     # 'myvar' : int
+    # 'myboolfunc' : bool
     # 'myfunc' : { 'x' : list }
 }
-symbol_stack = [[]]
-
-def get_symbol_table():
-    global symbol_table
-    return symbol_table
+scope_stack = []
+symbol_stack = [[]] # Easy way to implement all_names()
 
 def reset_symbol_table():
-    global symbol_table, symbol_stack
+    global symbol_table, scope_stack, symbol_stack
     symbol_table = {}
+    scope_stack = []
     symbol_stack = [[]]
+
+def get_table(scope_stack):
+    """Internal function to walk symbol_table with scope_stack."""
+    return reduce(lambda d, k: d[k]['symbols'], scope_stack, symbol_table)
 
 def all_names():
     """Get all identifiers visible in the current scope."""
-    global symbol_stack
     return [var for scope in symbol_stack for var in scope]
 
-def add_symbol(name):
-    symbol_stack[-1].append(name)
+def local_names():
+    """Get all identifiers in the local scope."""
+    return get_table(scope_stack).keys()
 
-def push_scope(name):
-    global symbol_table
-    symbol_table[name] = {}
+def get_type(var_name):
+    """Get an identifier's type."""
+    subtable = get_table(scope_stack)
+    if var_name in subtable:
+        return subtable[var_name]
+    for i in range(1, len(scope_stack) + 1):
+        subtable = get_table(scope_stack[:-i])
+        if var_name in subtable:
+            return subtable[var_name]
+
+def add_symbol(var_name, var_type):
+    """Add an identifier in the local scope."""
+    symbol_stack[-1].append(var_name)
+    get_table(scope_stack)[var_name] = var_type
+
+def push_scope(scope_name, scope_type=None):
+    get_table(scope_stack)[scope_name] = {
+        'type': scope_type, # Return type for function scopes, etc.
+        'symbols': {}
+    }
+    scope_stack.append(scope_name)
     symbol_stack.append([])
 
 def pop_scope():
+    scope_stack.pop()
     symbol_stack.pop()
 
 # Parsing Rules
@@ -172,7 +193,6 @@ def p_iteration(p):
         p[0] = ast.While(p[3], p[6], [])
     elif p[1] == 'for':
         if p[2] not in all_names():
-            logging.info(symbol_stack)
             warnings.warn("%s not declared before for loop!" % (p[2].id,), ParseError)
         p[0] = ast.For(p[2], p[4], p[6], [])
 
@@ -201,7 +221,7 @@ def p_statement_list(p):
 
 def p_function_def(p):
     """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
-                    | VOID NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+                    | void NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
     """
     p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1])
     pop_scope()
@@ -221,7 +241,7 @@ def p_params_def_list(p):
 
 def p_params_def(p):
     """params_def : type NAME
-                  | 
+                  |
     """
     if len(p) != 1:
         p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
@@ -269,26 +289,24 @@ def p_initialization(p):
                       | type variable_store
     """
     # Initialization adds a new variable name to the symbol table
-    if p[2] in all_names():
+    if p[2].id in local_names():
         warnings.warn("%s has been declared twice!" % (p[2].id,), ParseError)
-    add_symbol(p[2].id)
-    logging.info(symbol_stack)
+    add_symbol(p[2].id, p[1])
 
     if len(p) == 3:
         # this is for default initialization
         if p[1] == int:
-            p[0] = ast.Assign([p[2]], ast.Num(0), type=int)
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
         elif p[1] == bool:
-            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()),
-                type=bool)
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()), type=p[1])
         elif p[1] == float:
-            p[0] = ast.Assign([p[2]], ast.Num(0), type=float)
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
         elif p[1] == str:
-            p[0] = ast.Assign([p[2]], ast.Str(""), type=str)
+            p[0] = ast.Assign([p[2]], ast.Str(""), type=p[1])
         elif p[1] == list:
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=list) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
         else:
-            print("%s err" % (str(p[1])))
+            warnings.warn("%s Initialization error" % (str(p[1]),), ParseError)
     else:
           #add type checking here
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
@@ -313,6 +331,11 @@ def p_assignment(p):
     else:
         p[0] = ast.AugAssign(target=ast.Name(id=p[1], ctx=ast.Store()),
         op=operators[p[2]], value=p[3])
+
+def p_void(p):
+    """void : VOID
+    """
+    p[0] = None
 
 def p_type(p):
     """type : INT
@@ -507,7 +530,7 @@ def p_transition(p):
 def p_new_scope(p):
     """new_scope :
     """
-    push_scope(p[-1])
+    push_scope(p[-1], p[-2])
     p[0] = p[-1]
 
 def p_error(p):
@@ -524,7 +547,9 @@ def parse(string):
     reset_symbol_table()
     tree = parser.parse(string)
     if tree is not None:
-        tree.symbol_table = get_symbol_table()
+        global symbol_table, symbol_stack
+        tree.symbol_table = symbol_table
+        tree.symbol_stack = symbol_stack
     return tree
 
 def build_tree(args):
