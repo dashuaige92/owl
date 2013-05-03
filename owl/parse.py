@@ -1,6 +1,7 @@
 import sys
 import ast
 import warnings
+import logging
 
 import ply.yacc as yacc
 
@@ -24,11 +25,24 @@ symbol_table = {
     # 'myvar' : int
     # 'myfunc' : { 'x' : list }
 }
-symbol_stack = []
+symbol_stack = [[]]
+
+def get_symbol_table():
+    global symbol_table
+    return symbol_table
+
+def reset_symbol_table():
+    global symbol_table, symbol_stack
+    symbol_table = {}
+    symbol_stack = [[]]
 
 def all_names():
     """Get all identifiers visible in the current scope."""
+    global symbol_stack
     return [var for scope in symbol_stack for var in scope]
+
+def add_symbol(name):
+    symbol_stack[-1].append(name)
 
 def push_scope(name):
     global symbol_table
@@ -154,9 +168,12 @@ def p_iteration(p):
                  | FOR variable_store IN variable_load LBRACE statement_list RBRACE
     """
 
-    if p[1] == "while":
+    if p[1] == 'while':
         p[0] = ast.While(p[3], p[6], [])
-    else:
+    elif p[1] == 'for':
+        if p[2] not in all_names():
+            logging.info(symbol_stack)
+            warnings.warn("%s not declared before for loop!" % (p[2].id,), ParseError)
         p[0] = ast.For(p[2], p[4], p[6], [])
 
 def p_selection_statement(p):
@@ -251,13 +268,14 @@ def p_initialization(p):
     """initialization : type variable_store EQUAL expression
                       | type variable_store
     """
-    if p[2] in current_scope():
-        warnings.warn("%s has not been declared!" % (p[1],), ParseError)
+    # Initialization adds a new variable name to the symbol table
+    if p[2] in all_names():
+        warnings.warn("%s has been declared twice!" % (p[2].id,), ParseError)
+    add_symbol(p[2].id)
+    logging.info(symbol_stack)
 
     if len(p) == 3:
         # this is for default initialization
-
-
         if p[1] == int:
             p[0] = ast.Assign([p[2]], ast.Num(0), type=int)
         elif p[1] == bool:
@@ -503,12 +521,10 @@ def parse(string):
     NOTE: Make sure you call this instead of parser.parse() if you need the
           generated symbol table.
     """
-    # Reset the symbol_table in the global scope in case we're reusing it.
-    global symbol_table
-    symbol_table = {}
-
+    reset_symbol_table()
     tree = parser.parse(string)
-    tree.symbol_table = symbol_table
+    if tree is not None:
+        tree.symbol_table = get_symbol_table()
     return tree
 
 def build_tree(args):
