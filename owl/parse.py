@@ -22,8 +22,10 @@ precedence = (
 symbol_table = {
     # Example entries
     # 'myvar' : int
-    # 'myboolfunc' : bool
-    # 'myfunc' : { 'x' : list }
+    # 'myfunc' : {
+    #   'type' : list
+    #   'symbols' : sub_symbol_table
+    # }
 }
 scope_stack = []
 symbol_stack = [[]] # Easy way to implement all_names()
@@ -48,13 +50,10 @@ def local_names():
 
 def get_type(var_name):
     """Get an identifier's type."""
-    subtable = get_table(scope_stack)
-    if var_name in subtable:
-        return subtable[var_name]
-    for i in range(1, len(scope_stack) + 1):
-        subtable = get_table(scope_stack[:-i])
+    for i in range(len(scope_stack) + 1):
+        subtable = get_table(scope_stack if i is 0 else scope_stack[:-i])
         if var_name in subtable:
-            return subtable[var_name]
+            return subtable[var_name]['type'] if type(subtable[var_name]) is dict else subtable[var_name]
 
 def add_symbol(var_name, var_type):
     """Add an identifier in the local scope."""
@@ -194,6 +193,7 @@ def p_iteration(p):
     elif p[1] == 'for':
         if p[2] not in all_names():
             warnings.warn("%s not declared before for loop!" % (p[2].id,), ParseError)
+        p[2].type = get_type(p[2].id)
         p[0] = ast.For(p[2], p[4], p[6], [])
 
 def p_selection_statement(p):
@@ -411,7 +411,7 @@ def p_variable_store(p):
 def p_variable_load(p):
     """variable_load : NAME
     """
-    p[0] = ast.Name(p[1], ast.Load())
+    p[0] = ast.Name(p[1], ast.Load(), type=get_type(p[1]))
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
