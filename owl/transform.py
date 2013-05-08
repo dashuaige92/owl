@@ -178,6 +178,56 @@ class MachineCodeGenerator(ast.NodeTransformer):
         return [fun, val, ass]
 
 class TypeChecker(ast.NodeTransformer):
+    def visit_Assign(self, node):
+        # Assign node must have type set in parse.py
+        self.generic_visit(node)
+        if node.type != node.value.type:
+            #####################################
+            print node.type
+            print "should be"
+            print node.value.type
+            warnings.warn("""Cannot assign type %s
+                to variable of type %s""" % (str(node.value.type),
+                    str(node.type)), TransformError)
+        return node
+
+
+  # expression : function_call
+  #                 | arithmetic_expression
+  #                 | comparison_expression
+  #                 | boolean_expression
+  #                 | unary_expression
+  #                 | string
+  #                 | number
+  #                 | bool
+  #                 | variable_load
+  #                 | list
+  #                 | input
+    def visit_Expr(self, node):
+        self.generic_visit(node)
+        return node
+
+    # From Expr
+    def visit_BinOp(self, node):
+        self.generic_visit(node)
+        return node
+
+
+    # def vist_Compare(self, node):
+    #     self.generic_visit(node)
+
+
+    # def visit_BoolOp(self, node):
+    #     self.generic_visit(node)
+
+    # def visit_UnaryOp(self, node):
+    #     self.generic_visit(node)
+
+
+
+
+
+
     def visit_Name(self, node):
         # Check bool
         if node.id == 'True' or node.id == 'False':
@@ -186,6 +236,8 @@ class TypeChecker(ast.NodeTransformer):
         return node
 
     def visit_Num(self, node):
+        #is the following necessary? We split int and float in parse.py
+        print node.n
         if isinstance(node.n, int):
             node.type = int
         elif isinstance(node.n, float):
@@ -201,18 +253,18 @@ class TypeChecker(ast.NodeTransformer):
         node.type = str
         return node
 
-    def visit_Assign(self, node):
-        # Assign node must have type set in parse.py
-        self.generic_visit(node)
-        if node.type != node.value.type:
-            warnings.warn("""Cannot assign type %s
-                to variable of type %s""" % (str(node.value.type),
-                    str(node.type)), TransformError)
-        return node
-
-    # Do nothing
-
     def visit_List(self, node):
+        self.generic_visit(node)
+        tmp = node.elts
+        if any(tmp):
+            var_type = tmp[0].type
+            # Right now just checking if all types are the same
+            for node in tmp:
+                if node.type != var_type:
+                    warnings.warn("""List entries must be of type %s""" % var_type, 
+                                                                TransformError)
+                    break
+            node.type = list
         return node
 
 class ScopeResolver(ast.NodeTransformer):

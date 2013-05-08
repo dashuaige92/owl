@@ -454,15 +454,15 @@ def p_initialization(p):
     if len(p) == 3:
         # this is for default initialization
         if p[1] == int:
-            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Num(0, type=p[1]), type=p[1])
         elif p[1] == bool:
-            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load(), type=p[1]), type=p[1])
         elif p[1] == float:
-            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Num(0, type=p[1]), type=p[1])
         elif p[1] == str:
-            p[0] = ast.Assign([p[2]], ast.Str(""), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Str("", type=p[1]), type=p[1])
         elif p[1] == list:
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
         else:
             warnings.warn("%s Initialization error" % (str(p[1]),), ParseError)
     else:
@@ -526,7 +526,7 @@ def p_number_float(p):
 def p_string(p):
     """string : LIT_STRING
     """
-    p[0] = ast.Str(p[1][1:-1])
+    p[0] = ast.Str(p[1][1:-1], type=str)
 
 #def p_trans_string(p):
 #    """trans_string : LIT_STRING
@@ -556,9 +556,9 @@ def p_bool(p):
             | FALSE
     """
     if p[1] == "true":
-        p[0] = ast.Name("True", ast.Load())
+        p[0] = ast.Name("True", ast.Load(), type=bool)
     else:
-        p[0] = ast.Name("False", ast.Load())
+        p[0] = ast.Name("False", ast.Load(), type=bool)
 
 # Use variable_store and variable_load instead of NAME for variables
 def p_variable_store(p):

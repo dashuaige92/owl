@@ -26,17 +26,16 @@ class TestInitialization(ParserTestCase):
             b = True
             """)
         self.assertAST(owl, python)
-    # Broken, need to differentiate int and float nodes
-    # def test_declare_init_float(self):
-    #     owl = textwrap.dedent(
-    #         r"""
-    #         float f = 1.5
-    #         """)
-    #     python = textwrap.dedent(
-    #         r"""
-    #         f = 1.5
-    #         """)
-    #     self.assertAST(owl, python)
+    def test_declare_init_float(self):
+        owl = textwrap.dedent(
+            r"""
+            float f = 1.5
+            """)
+        python = textwrap.dedent(
+            r"""
+            f = 1.5
+            """)
+        self.assertAST(owl, python)
 
     def test_declare_init_string(self):
         owl = textwrap.dedent(
