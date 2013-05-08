@@ -24,11 +24,12 @@ class Transition(object):
     @condition = function(token) that determines if this transition activates
     """
 
-    def __init__(self, start_state, end_state, condition):
+    def __init__(self, start_state, end_state, condition=None):
         self.start_state = start_state
         self.end_state = end_state
         self.condition = condition
         self.on_enter = EventHook()
+
 
 
 
@@ -82,15 +83,31 @@ class Automaton(object):
 
         transitions = self.states[self.current_state]
         candidates = [] # list of candidates for next state
+        defaults = []
         for t in transitions:
-#           if neighbors[s].condition(token.group()):
-            if t.condition(token.string):
-                candidates.append(t)
+            if t.condition is not None:
+                # maybe change from token.string to token.group
+                if t.condition(token.string):
+                    candidates.append(t)
+            else:
+                defaults.append(t)
+    
 
         if len(candidates) > 1:
-            raise RuntimeError('Automaton must be deterministic')
+            raise RuntimeError('Automaton must be deterministic (more than one transition on input)')
+        elif candidates:
+            trans = candidates[0]
 
-        trans = None if not candidates else candidates[0]
+
+        if not candidates and not defaults:
+            trans = None
+        elif not candidates and len(defaults) > 1:
+            raise RuntimeError('Automaton must be deterministic (more than one default transistion)')
+        elif not candidates:
+            trans = defaults[0]
+        else:
+            pass
+
         return (token, trans)
 
     def step(self, string=''):

@@ -619,12 +619,17 @@ def p_three_es(p):
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
                   | NAME LPAREN string RPAREN ARROW NAME LBRACE func_statement_list RBRACE
+                  | NAME LPAREN RPAREN ARROW NAME NEWLINE
+                  | NAME LPAREN RPAREN ARROW NAME LBRACE func_statement_list RBRACE
     """
     if len(p) == 8:
         p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[])
     elif len(p) == 10:
         p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[8])
-
+    elif len(p) == 7:
+        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=[])
+    else:
+        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=p[7])
 
 
 def p_new_scope(p):

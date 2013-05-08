@@ -127,4 +127,49 @@ class TestMachine(TransformTestCase):
 
         self.assertTransformedAST(owl, python)
 
+    #@unittest.skip("Not yet implemented")
+    def test_machine_func_default_trans(self):
+        owl = textwrap.dedent(r"""
+            machine m5 = {
+            node a
+            node b
+            enter(a) {
+            print("world")
+            }
+            a("1") -> b {
+            print("hello")
+            }
+            a() -> a {
+                print("invalid input")
+            }
+            }
+            """)
+
+        python = textwrap.dedent(r"""
+            a = State()
+            b = State()
+
+            def func_a():
+                print("world")
+
+            a.on_enter += func_a
+
+            def trans_a_b_1():
+                print("hello")
+
+            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b_1.on_enter += trans_a_b_1
+            
+            def trans_a_a_default_transition():
+                print("invalid input")
+
+            _a_a_default_transition = Transition(a, a )
+            _a_a_default_transition.on_enter += trans_a_a_default_transition
+
+            m5 = Automaton([a,b],[_a_b_1,_a_a_default_transition],a)
+
+            """)
+
+        self.assertTransformedAST(owl, python)
+
 
