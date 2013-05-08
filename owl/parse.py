@@ -285,7 +285,7 @@ def p_statement_list_item(p):
         p[0] = p[1]
 
 def p_statement_list_item_expression(p):
-    """statement_list_item : expression
+    """statement_list_item : expression NEWLINE
     """
     p[0] = p[1] if type(p[1]) is ast.Print else ast.Expr(value=p[1])
 
@@ -358,15 +358,17 @@ def p_func_statement_list_item(p):
         p[0] = p[1]
 
 def p_func_statement_list_item_expression(p):
-    """func_statement_list_item : expression
+    """func_statement_list_item : expression NEWLINE
     """
     p[0] = p[1] if type(p[1]) is ast.Print else ast.Expr(value=p[1])
 
 def p_return_statement(p):
-    """return_stmt : RETURN
-                   | RETURN expression
+    """return_stmt : RETURN NEWLINE
+                   | RETURN expression NEWLINE
+        
+        
     """
-    if len(p) == 2:
+    if len(p) == 3:
         p[0] = ast.Return(value=None)
     else:
         p[0] = ast.Return(value=p[2])
