@@ -139,7 +139,7 @@ def p_input(p):
         """
     p[0] = ast.Call(func=ast.Name(id='raw_input', ctx=ast.Load()), args=[
                                                              p[3],
-                                                             ], keywords=[], starargs=None, kwargs=None)
+                                                             ], keywords=[], starargs=None, kwargs=None, type=str)
 
 def p_arithmetic_expression(p):
     """arithmetic_expression : expression PLUS expression
@@ -365,8 +365,6 @@ def p_func_statement_list_item_expression(p):
 def p_return_statement(p):
     """return_stmt : RETURN NEWLINE
                    | RETURN expression NEWLINE
-        
-        
     """
     if len(p) == 3:
         p[0] = ast.Return(value=None)
@@ -396,6 +394,10 @@ def p_params_def(p):
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
+                     | TOINT LPAREN expression RPAREN
+                     | TOBOOL LPAREN expression RPAREN
+                     | TOFLOAT LPAREN expression RPAREN
+                     | TOSTRING LPAREN expression RPAREN
                      | variable_load LPAREN parameters RPAREN
                      | variable_load DOT NAME LPAREN parameters RPAREN
                      | variable_load DOT NAME
@@ -404,6 +406,14 @@ def p_function_call(p):
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True)
+    elif p[1] == 'toInt':
+        p[0] = ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
+    elif p[1] == 'toBool':
+        p[0] = ast.Call(func=ast.Name(id='bool', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=bool)
+    elif p[1] == 'toFloat':
+        p[0] = ast.Call(func=ast.Name(id='float', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=float)
+    elif p[1] == 'toString':
+        p[0] = ast.Call(func=ast.Name(id='str', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=str)
     elif len(p) == 4:
         p[0] = ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
     elif len(p) == 7:
