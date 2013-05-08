@@ -3,8 +3,8 @@ import textwrap
 
 from test.parse_helper import ParserTestCase
 
-class TestInput(ParserTestCase):
-	def test_input(self):
+class TestHoot(ParserTestCase):
+	def test_hoot(self):
 		owl = textwrap.dedent(r"""
 		hoot()
 		""")
@@ -12,3 +12,9 @@ class TestInput(ParserTestCase):
 		print '\a'
 		""")
 		self.assertAST(owl, python)
+
+	def test_hoot_with_argument_raises_error(self):
+		owl = textwrap.dedent(r"""
+		hoot("hi")
+		""")
+		self.assertParseError(owl)
