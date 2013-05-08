@@ -7,6 +7,9 @@ class TestInvalidCharacters(LexerTestCase):
     def test_invalid_tilde(self):
         self.assertLexError("~")
 
+    def test_invalid_single_quote(self):
+        self.assertLexError("'")
+
     def test_invalid_backtick(self):
         self.assertLexError("`")
 
