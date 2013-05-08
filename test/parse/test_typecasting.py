@@ -3,7 +3,7 @@ import textwrap
 
 from test.parse_helper import ParserTestCase
 
-class TestUnaryOp(ParserTestCase):
+class TestTypecasting(ParserTestCase):
 
 	def test_toInt(self):
 		owl = textwrap.dedent(

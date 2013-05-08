@@ -390,7 +390,7 @@ def p_params_def(p):
                   |
     """
     if len(p) != 1:
-        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
+        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1], scope=scope_stack)
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
@@ -470,11 +470,11 @@ def p_initialization(p):
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
 def p_assignment(p):
-    """assignment : NAME EQUAL expression
-                  | NAME PEQUAL expression
-                  | NAME MEQUAL expression
-                  | NAME TEQUAL expression
-                  | NAME DEQUAL expression
+    """assignment : variable_store EQUAL expression
+                  | variable_store PEQUAL expression
+                  | variable_store MEQUAL expression
+                  | variable_store TEQUAL expression
+                  | variable_store DEQUAL expression
     """
     operators = {
         '=' : ast.Eq(),
@@ -485,9 +485,9 @@ def p_assignment(p):
     }
 
     if p[2] == '=':
-        p[0] = ast.Assign(targets=[ast.Name(id=p[1], ctx=ast.Store())], value=p[3])
+        p[0] = ast.Assign(targets=[p[1]], value=p[3], type=p[1].type)
     else:
-        p[0] = ast.AugAssign(target=ast.Name(id=p[1], ctx=ast.Store()),
+        p[0] = ast.AugAssign(target=p[1],
         op=operators[p[2]], value=p[3])
 
 def p_void(p):
@@ -564,12 +564,12 @@ def p_bool(p):
 def p_variable_store(p):
     """variable_store : NAME
     """
-    p[0] = ast.Name(p[1], ast.Store())
+    p[0] = ast.Name(p[1], ast.Store(), type=get_type(p[1]), scope=scope_stack[:])
 
 def p_variable_load(p):
     """variable_load : NAME
     """
-    p[0] = ast.Name(p[1], ast.Load(), type=get_type(p[1]))
+    p[0] = ast.Name(p[1], ast.Load(), type=get_type(p[1]), scope=scope_stack[:])
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
@@ -610,13 +610,6 @@ def p_node(p):
 def p_function(p):
     """function : three_es LPAREN NAME RPAREN LBRACE func_statement_list RBRACE
     """ 
-
-    #p[0] = []
-
-    #p[0].append(ast.FunctionDef('func_'+p[3], ast.arguments([], None, None, []), p[6] if p[6] is not None else [ast.Pass()], []))
-
-    #p[0].append(ast.AugAssign(ast.Attribute(ast.Name(p[3], ast.Load()), 'on_'+p[1], ast.Store()), ast.Add(), ast.Name('func_'+p[3], ast.Load())))
-
     p[0] = nodes.Function(e=p[1], name=p[3], body=p[6])
 
 

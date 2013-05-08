@@ -215,8 +215,18 @@ class TypeChecker(ast.NodeTransformer):
     def visit_List(self, node):
         return node
 
+class ScopeResolver(ast.NodeTransformer):
+    """Add underscores for scopes to avoid naming conflicts.
+    Add global keyword when making new function scopes.
+    """
+
+    def visit_Name(self, node):
+        if hasattr(node, 'scope'):
+            node.id = '_'*(len(node.scope) + 1) + node.id
+        return node
+
 def transform(tree, filters=[]):
-    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ]:
+    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver]:
         if Transformer not in filters:
             tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)

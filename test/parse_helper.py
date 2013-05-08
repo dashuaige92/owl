@@ -45,7 +45,7 @@ class TransformTestCase(ParserTestCase):
     """An extension of ParserTestCase that performs AST transformation first.
     """
     def assertTransformedAST(self, owl_source, python_source,
-                             transform_filters=[transform.StandardLibraryAdder]):
+                             transform_filters=[transform.StandardLibraryAdder, transform.ScopeResolver]):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
@@ -76,12 +76,13 @@ class TransformTestCase(ParserTestCase):
                                  '\n\nPython:\n' + python_dump
                                 )
 
-    def assertTransformError(self, owl_source):
+    def assertTransformError(self, owl_source,
+                             transform_filters=[transform.StandardLibraryAdder, transform.ScopeResolver]):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
             owl_tree = parse.parse(owl_source)
-            owl_tree = transform.transform(owl_tree)
+            owl_tree = transform.transform(owl_tree, transform_filters)
             if any(issubclass(e.category, ParseError) for e in w):
                 raise AssertionError(
                     'Unexpected ParseError in Owl source!\n' +
@@ -90,12 +91,13 @@ class TransformTestCase(ParserTestCase):
             if not any(issubclass(e.category, TransformError) for e in w):
                 raise AssertionError('Expected TransformError not raised!')
 
-    def assertNoTransformError(self, owl_source):
+    def assertNoTransformError(self, owl_source,
+                               transform_filters=[transform.StandardLibraryAdder, transform.ScopeResolver]):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
 
             owl_tree = parse.parse(owl_source)
-            owl_tree = transform.transform(owl_tree)
+            owl_tree = transform.transform(owl_tree, transform_filters)
             if any(issubclass(e.category, ParseError) for e in w):
                 raise AssertionError(
                     'Unexpected ParseError in Owl source!\n' +
