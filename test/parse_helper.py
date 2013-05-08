@@ -89,3 +89,17 @@ class TransformTestCase(ParserTestCase):
                 )
             if not any(issubclass(e.category, TransformError) for e in w):
                 raise AssertionError('Expected TransformError not raised!')
+
+    def assertNoTransformError(self, owl_source):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+
+            owl_tree = parse.parse(owl_source)
+            owl_tree = transform.transform(owl_tree)
+            if any(issubclass(e.category, ParseError) for e in w):
+                raise AssertionError(
+                    'Unexpected ParseError in Owl source!\n' +
+                    '\n'.join(str(e.message) for e in w)
+                )
+            if any(issubclass(e.category, TransformError) for e in w):
+                raise AssertionError('Unexpected TransformError raised!')
