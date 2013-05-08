@@ -12,6 +12,9 @@ reserved = {
     'true'    : 'TRUE' ,
     'false'   : 'FALSE' ,
 
+    'input'   : 'INPUT',
+    'hoot'    : 'HOOT',
+    'return'    : 'RETURN',
 
     'void'    : 'VOID',
 
@@ -24,8 +27,6 @@ reserved = {
     'float'   : 'FLOAT',
     'string'  : 'STRING',
     'list'    : 'LIST',
-    'node'    : 'NODE',
-    'machine' : 'MACHINE',
 
     'for'     : 'FOR',
     'in'      : 'IN',

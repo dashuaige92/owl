@@ -110,21 +110,21 @@ class MachineCodeGenerator(ast.NodeTransformer):
 
 
         if node.body is None:
-            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), [ast.Pass()], [])
+            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]), ast.arguments([], None, None, []), [ast.Pass()], [])
 
         elif type(node.body) is not list:
-            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), [node.body], [])
+            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]), ast.arguments([], None, None, []), [node.body], [])
 
         elif len(node.body) is 0:
-            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), [ast.Pass()], [])
+            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]), ast.arguments([], None, None, []), [ast.Pass()], [])
         
         else:
-            fun = ast.FunctionDef('trans_%s_%s' % (node.left, node.right), ast.arguments([], None, None, []), node.body, [])
+            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]), ast.arguments([], None, None, []), node.body, [])
 
                 
         val = ast.copy_location(ast.Assign(
             targets=[ast.Name(
-                id='_%s_%s' % (node.left, node.right),
+                id='_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]),
                 ctx=ast.Store(),
             )],
             value=ast.Call(
@@ -137,7 +137,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                     ], vararg=None, kwarg=None, defaults=[]), body=ast.Compare(left=ast.Name(id='_x', ctx=ast.Load()), ops=[
                         ast.Eq(),
                     ], comparators=[
-                        ast.Str(s=node.arg.s), # Get value of ast.Str in arg
+                        ast.Str(s=node.arg.s), # Get value of ast.Str in arg (consider putting .split()[0] here and mention this in the manual
                     ]))
                 ],
                 keywords=[],
@@ -147,7 +147,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         ), node)
 
 
-        ass = ast.AugAssign(ast.Attribute(ast.Name('_%s_%s' % (node.left, node.right), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_%s_%s' % (node.left, node.right), ast.Load()))
+        ass = ast.AugAssign(ast.Attribute(ast.Name('_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_%s_%s_%s' % (node.left, node.right, node.arg.s.split()[0]), ast.Load()))
 
 
         transitions.append(val)

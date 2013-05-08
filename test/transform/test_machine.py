@@ -8,6 +8,13 @@ class TestMachine(TransformTestCase):
     def test_machine_without_nodes_raises_error(self):
         owl = textwrap.dedent(
             r"""
+            machine m1 = {}
+            """)
+        self.assertTransformError(owl)
+
+    def test_machine_without_nodes_raises_error_2(self):
+        owl = textwrap.dedent(
+            r"""
             machine m1 = {
             }
             """)
@@ -43,13 +50,13 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
 
-            def trans_a_b():
+            def trans_a_b_1():
                 pass
             
-            _a_b = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b.on_enter += trans_a_b
+            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b_1.on_enter += trans_a_b_1
 
-            m3 = Automaton([a,b],[_a_b],a)
+            m3 = Automaton([a,b],[_a_b_1],a)
 
             """)
 
@@ -71,13 +78,13 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
             
-            def trans_a_b():
+            def trans_a_b_1():
                 print("hello")
 
-            _a_b = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b.on_enter += trans_a_b
+            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b_1.on_enter += trans_a_b_1
             
-            m4 = Automaton([a,b],[_a_b],a)
+            m4 = Automaton([a,b],[_a_b_1],a)
 
             """)
 
@@ -108,13 +115,13 @@ class TestMachine(TransformTestCase):
             
             a.on_enter += func_a
 
-            def trans_a_b():
+            def trans_a_b_1():
                 print("hello")
 
-            _a_b = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b.on_enter += trans_a_b
+            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
+            _a_b_1.on_enter += trans_a_b_1
 
-            m5 = Automaton([a,b],[_a_b],a)
+            m5 = Automaton([a,b],[_a_b_1],a)
 
             """)
 

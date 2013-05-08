@@ -27,3 +27,23 @@ class TestFunctionDef(ParserTestCase):
 				print x
 			""")
 		self.assertAST(owl, python)
+
+
+	def test_function_def_2(self):
+
+
+		owl = textwrap.dedent(r"""
+			string test() {
+                print("1")
+                print("1")
+                print("1")
+			}
+			""")
+		python = textwrap.dedent(r"""
+def test():
+    print "1"
+    print "1"
+    print "1"
+
+""")
+		self.assertAST(owl, python)

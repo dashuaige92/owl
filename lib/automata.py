@@ -8,11 +8,12 @@ class State(object):
     @token = a regex to match on the input stream, '' for epsilon
     """
 
-    def __init__(self, token='.'):
+    def __init__(self, token='.*'):
         self.token = token
         self.on_enter = EventHook()
         self.on_exit = EventHook()
         self.on_end = EventHook()
+
 
 
 class Transition(object):
@@ -30,6 +31,7 @@ class Transition(object):
         self.on_enter = EventHook()
 
 
+
 class Automaton(object):
     """Create an automaton from a list of states and transitions.
 
@@ -39,7 +41,7 @@ class Automaton(object):
     def __init__(self, states, transitions, start_state):
         if start_state not in states:
             raise RuntimeError('Invalid start_state')
-        self.states = dict((s, {}) for s in states)
+        self.states = dict((s, []) for s in states)
         self.start_state = start_state
         self.current_state = start_state
         self.current_input = '' 
@@ -48,14 +50,21 @@ class Automaton(object):
                     or t.end_state not in self.states \
                     or not callable(t.condition):
                         raise RuntimeError('Invalid transition', t)
-            self.states[t.start_state][t.end_state] = t
+            self.states[t.start_state].append(t)
 
         self.on_reject = EventHook()
+
+#        for s in self.states:
+#            print s.token+" "+str(len(self.states[s]))
+#            for t in self.states[s]:
+#                print t.string
+
+        self.begin = True
 
     def stream(self, string):
         """Add to the automaton input stream.
         """
-        self.current_input += string
+        self.current_input = string
 
     def lex(self):
         """Determine the next state based on the current state and input stream.
@@ -65,39 +74,49 @@ class Automaton(object):
         if self.current_state is None:
             return (None, None)
         token = re.match(self.current_state.token, self.current_input)
+
+        print token.string
+
         if token is None:
             return (None, None)
 
-        neighbors = self.states[self.current_state]
+        transitions = self.states[self.current_state]
         candidates = [] # list of candidates for next state
-        for s in neighbors:
-            if neighbors[s].condition(token.group()):
-                candidates.append(s)
+        for t in transitions:
+#           if neighbors[s].condition(token.group()):
+            if t.condition(token.string):
+                candidates.append(t)
 
         if len(candidates) > 1:
             raise RuntimeError('Automaton must be deterministic')
 
-        next_state = None if not candidates else candidates[0]
-        return (token, next_state)
+        trans = None if not candidates else candidates[0]
+        return (token, trans)
 
     def step(self, string=''):
         """Advance the automaton one state.
 
         Returns False if no valid @next_state was found.
         """
+
+        if self.begin:
+            self.current_state.on_enter.fire()
+            self.begin = False
+
+
         self.stream(string)
-        (token, next_state) = self.lex()
-        if next_state is None:
+        (token, trans) = self.lex()
+        if trans is None:
             return False
 
-        self.current_input = self.current_input[token.end():]
+        #self.current_input = self.current_input[token.end():]
+
         # Run exit hooks for current_state
         self.current_state.on_exit.fire()
         # Run transition hooks
-        transition = self.states[self.current_state][next_state]
-        transition.on_enter.fire()
+        trans.on_enter.fire()
 
-        self.current_state = next_state
+        self.current_state = trans.end_state
         # Run enter hooks for next_state
         self.current_state.on_enter.fire()
         return True
@@ -128,7 +147,9 @@ class Automaton(object):
         """Return the automaton to the start state. Flush the input stream.
         """
         self.current_state = self.start_state
-        self.current_input = '' 
+        self.current_input = ''
+        self.begin = True
+
 
 
 def main():

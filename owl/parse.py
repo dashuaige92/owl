@@ -96,17 +96,28 @@ def p_statement(p):
                  | selection_statement
                  | machine
                  | function_def
+                 | hoot
     """
     if p[1] == "\n":
         p[0] = None
     else:
         p[0] = p[1]
 
+
 # Python only wraps an expression with Expr when it is its own statement
 def p_statement_expression(p):
     """statement : expression NEWLINE
-    """
+        """
     p[0] = p[1] if type(p[1]) is ast.Print else ast.Expr(value=p[1])
+
+
+def p_hoot(p):
+    """hoot : HOOT LPAREN RPAREN NEWLINE
+    """
+    p[0] = ast.Print(dest=None, values=[
+                                    ast.Str(s='\x07'),
+                                    ], nl=True)
+
 
 def p_expression(p):
     """expression : function_call
@@ -119,8 +130,16 @@ def p_expression(p):
                   | bool
                   | variable_load
                   | list
+                  | input
     """
     p[0] = p[1]
+
+def p_input(p):
+    """input : INPUT LPAREN string RPAREN
+        """
+    p[0] = ast.Call(func=ast.Name(id='raw_input', ctx=ast.Load()), args=[
+                                                             p[3],
+                                                             ], keywords=[], starargs=None, kwargs=None)
 
 def p_arithmetic_expression(p):
     """arithmetic_expression : expression PLUS expression
@@ -207,29 +226,156 @@ def p_selection_statement(p):
         p[0] = ast.If(p[3], p[6], p[10])
 
 def p_statement_list(p):
-    """statement_list : statement
-                      | statement statement_list
+    """statement_list : statement_list_item
+                      | statement_list_item statement_list
     """
 
     if len(p) == 2:
         p[0] = p[1]
     elif len(p) == 3:
         if p[1] is not None:
-            p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+            
+            if p[2] is None:
+                p[0] = p[1]
+
+            elif type(p[2]) == list and type(p[1]) == list:
+                p[0] = p[2] + p[1]
+
+            elif type(p[2]) == list and type(p[1]) != list:
+                p[0] = p[2]
+                p[0].append(p[1])
+
+            elif type(p[2]) != list and type(p[1]) == list:
+                p[0] = p[1]
+                p[0].append(p[2])
+
+            else:
+                p[0] = [p[2]]
+                p[0].append(p[1])
+
+
+#            if type(p[1]) == list:
+#                p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+#            else:
+#                p[0] = [p[1]] + ([p[2]] if p[2] is not None else [])
+
         else:
-            p[0] = ([p[2]] if p[2] is not None else [])
+            if p[2] is None:
+                p[0] = p[1]
+
+            elif type(p[2]) == list:
+                p[0] = p[2]
+
+            else:
+                p[0] = [p[2]]
+
+
+
+def p_statement_list_item(p):
+    """statement_list_item : NEWLINE
+                           | initialization NEWLINE
+                           | assignment NEWLINE
+                           | iteration
+                           | selection_statement
+                           | hoot
+    """
+    if p[1] == "\n":
+        p[0] = None
+    else:
+        p[0] = p[1]
+
+def p_statement_list_item_expression(p):
+    """statement_list_item : expression
+    """
+    p[0] = p[1] if type(p[1]) is ast.Print else ast.Expr(value=p[1])
 
 def p_function_def(p):
-    """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
-                    | void NAME new_scope LPAREN params_def_list RPAREN LBRACE statement_list RBRACE
+    """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
+                    | void NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
     """
     p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1])
     pop_scope()
 
+def p_func_statement_list(p):
+    """func_statement_list : func_statement_list_item
+                           | func_statement_list_item func_statement_list
+    """
+
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 3:
+        if p[1] is not None:
+
+            if p[2] is None:
+                p[0] = p[1]
+            
+            elif type(p[2]) == list and type(p[1]) == list:
+                p[0] = p[2] + p[1]
+        
+            elif type(p[2]) == list and type(p[1]) != list:
+                p[0] = p[2]
+                p[0].append(p[1])
+                    
+            elif type(p[2]) != list and type(p[1]) == list:
+                p[0] = p[1]
+                p[0].append(p[2])
+        
+            else:
+                p[0] = [p[2]]
+                p[0].append(p[1])
+
+
+
+#            if type(p[1]) == list:
+#                p[0] = p[1] + ([p[2]] if p[2] is not None else [])
+#            else:
+#                p[0] = [p[1]] + ([p[2]] if p[2] is not None else [])
+        else:
+
+            if p[2] is None:
+                p[0] = p[1]
+
+            elif type(p[2]) == list:
+                p[0] = p[2]
+
+            else:
+                p[0] = [p[2]]
+
+
+def p_func_statement_list_item(p):
+    """func_statement_list_item : NEWLINE
+                                | initialization NEWLINE
+                                | assignment NEWLINE
+                                | iteration
+                                | selection_statement
+                                | hoot
+                                | return_stmt
+    """
+    
+    if p[1] == "\n":
+        p[0] = None
+    else:
+        p[0] = p[1]
+
+def p_func_statement_list_item_expression(p):
+    """func_statement_list_item : expression
+    """
+    p[0] = p[1] if type(p[1]) is ast.Print else ast.Expr(value=p[1])
+
+def p_return_statement(p):
+    """return_stmt : RETURN
+                   | RETURN expression
+    """
+    if len(p) == 2:
+        p[0] = ast.Return(value=None)
+    else:
+        p[0] = ast.Return(value=p[2])
+
+
 def p_params_def_list(p):
     """params_def_list : params_def
                        | params_def COMMA params_def_list
-                       
+
     """
     if len(p) == 2:
         if p[1] is None:
@@ -370,10 +516,10 @@ def p_string(p):
     """
     p[0] = ast.Str(p[1][1:-1])
 
-def p_trans_string(p):
-    """trans_string : LIT_STRING
-        """
-    p[0] = p[1][1:-1]
+#def p_trans_string(p):
+#    """trans_string : LIT_STRING
+#        """
+#    p[0] = p[1][1:-1]
 
 def p_list(p):
     """list : LBRACK parameters RBRACK
@@ -415,6 +561,7 @@ def p_variable_load(p):
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
+               | MACHINE NAME EQUAL LBRACE RBRACE
     """
     p[0] = nodes.Machine(p[2], p[5])
 
@@ -449,7 +596,7 @@ def p_node(p):
     p[0] = None if len(p) is 2 else nodes.Node(p[2])
 
 def p_function(p):
-    """function : three_es LPAREN NAME RPAREN LBRACE statement_list RBRACE
+    """function : three_es LPAREN NAME RPAREN LBRACE func_statement_list RBRACE
     """ 
 
     #p[0] = []
@@ -471,60 +618,13 @@ def p_three_es(p):
 
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN string RPAREN ARROW NAME LBRACE statement_list RBRACE
+                  | NAME LPAREN string RPAREN ARROW NAME LBRACE func_statement_list RBRACE
     """
     if len(p) == 8:
         p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[])
     elif len(p) == 10:
         p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[8])
 
-
-    """
-    if len(p) == 10:
-        machine_trans.append(str(p[1])+str(p[6]))
-
-
-        p[0] = []
-
-        p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), p[8] if p[8] is not None else [ast.Pass()], []))
-
-        p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
-                                                                                                        ast.Name(p[6], ast.Load()),
-                                                                                                        ast.Lambda(ast.arguments([ast.Name('x', ast.Param())], None, None, []),
-                                                                                                        ast.Compare(ast.Name('x', ast.Load()),[ ast.Eq()], [p[3]])),], [],
-                                                                                                        None, None)))
-        
-        p[0].append(ast.AugAssign(ast.Attribute(ast.Name(str(p[1])+str(p[6]), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load())))
-
-
-
-
-    elif len(p) == 8:
-        machine_trans.append(str(p[1])+str(p[6]))
-
-
-        p[0] = []
-
-        p[0].append(ast.FunctionDef('trans_'+str(p[1])+str(p[6]), ast.arguments([], None, None, []), [ast.Pass()], []))
-
-
-        # p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
-        #                                                                                    ast.Name(p[6], ast.Load())],[],None, None)))
-
-        p[0].append(ast.Assign([ast.Name(str(p[1])+str(p[6]), ast.Store()),], ast.Call(ast.Name('Transition', ast.Load()), [ast.Name(p[1], ast.Load()),
-                                                                                                        ast.Name(p[6], ast.Load()),
-                                                                                                        ast.Lambda(ast.arguments([ast.Name('x', ast.Param())], None, None, []),
-                                                                                                        ast.Compare(ast.Name('x', ast.Load()),[ ast.Eq()], [p[3]]))], [],
-                                                                                                        None, None)))
-
-        p[0].append(ast.AugAssign(ast.Attribute(ast.Name(str(p[1])+str(p[6]), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_'+str(p[1])+str(p[6]), ast.Load())))
-
-
-
-    else:
-        pass
-        
-    """
 
 
 def p_new_scope(p):
