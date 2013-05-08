@@ -24,7 +24,6 @@ class TestInitialization(TransformTestCase):
 				l = [1, 2, 3]
 				""")
 
-
 	# Invalid Tests
 	def test_str_assign_invalid(self):
 		owl = textwrap.dedent(r"""

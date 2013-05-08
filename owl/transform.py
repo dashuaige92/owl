@@ -11,6 +11,7 @@ from errors import TransformError
 nodes = []
 transitions = []
 
+
 class StandardLibraryAdder(ast.NodeTransformer):
     """Append AST Nodes to mimic a standard library.
     """
@@ -177,56 +178,99 @@ class MachineCodeGenerator(ast.NodeTransformer):
         transitions.append(val)
         return [fun, val, ass]
 
-class TypeChecker(ast.NodeTransformer):
+class TypeChecker(ast.NodeTransformer): 
+
+    arith_types = set([int, float])
+    str_comp = set([ast.Eq, ast.NotEq])
+
+
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
         if node.type != node.value.type:
-            #####################################
-            print node.type
-            print "should be"
-            print node.value.type
             warnings.warn("""Cannot assign type %s
                 to variable of type %s""" % (str(node.value.type),
                     str(node.type)), TransformError)
         return node
 
-
-  # expression : function_call
-  #                 | arithmetic_expression
-  #                 | comparison_expression
-  #                 | boolean_expression
-  #                 | unary_expression
-  #                 | string
-  #                 | number
-  #                 | bool
-  #                 | variable_load
-  #                 | list
-  #                 | input
     def visit_Expr(self, node):
         self.generic_visit(node)
         return node
 
-    # From Expr
     def visit_BinOp(self, node):
         self.generic_visit(node)
+
+        l_type = node.left.type
+        r_type = node.right.type
+
+        if l_type in self.arith_types and r_type in self.arith_types:
+            # Valid 
+            if l_type == float or r_type == float:
+                node.type = float
+            else:
+                node.type = int
+        else:
+            warnings.warn("""Invalid Arithmetic Expression: performing Binary Operation
+                with types %s and %s""" % (str(l_type), str(r_type)), TransformError)
+            node.type = int # Should I not assign this?
         return node
 
+    def visit_Compare(self, node):
+        self.generic_visit(node)
+        
+        node.type = None
+        if (len(node.ops) != 1):
+            warnings.warn("""Invalid Comparison Expression: Cannot have more than one Comparison
+                                            """ % (str(l_type), str(r_type)), TransformError)
+        else:
+            l_type = node.left.type
+            r_type = node.comparators[0].type
+            if l_type == str and r_type == str:
+                if type(node.ops[0]) in self.str_comp:
+                    node.type = bool
+            elif l_type in self.arith_types and r_type in self.arith_types:
+                node.type = bool
+            else:
+                 warnings.warn("""Invalid Comparison Expression: performing Comparison 
+                        between types %s and %s""" % (str(l_type), str(r_type)), TransformError)
+                 node.type = None
+        return node
 
-    # def vist_Compare(self, node):
-    #     self.generic_visit(node)
+    def visit_BoolOp(self, node):
+        self.generic_visit(node)
 
+        node.type = bool
+        for val in node.values:
+            if val.type != bool:
+                node.type = None
+                warnings.warn("""Invalid Boolean Expression: Invalid value of type
+                                 %s""" % str(val.type), TransformError)
+                break
 
-    # def visit_BoolOp(self, node):
-    #     self.generic_visit(node)
+        return node
+    def visit_UnaryOp(self, node):
+        self.generic_visit(node)
 
-    # def visit_UnaryOp(self, node):
-    #     self.generic_visit(node)
+        op_type = node.operand.type
+        if type(node.op) == ast.USub:
+            if op_type == int:
+                node.type = int
+            elif op_type == float:
+                node.type = float
+            else:
+                node.type = None
+                warnings.warn("""Invalid Unary Minus Expression: Invalid Operand of type
+                                                %s""" % str(op_type), TransformError)
+        elif type(node.op) == ast.Not:
+            print op_type
+            if op_type == bool:
+                node.type = bool
+            else:
+                node.type = None
+                warnings.warn("""Invalid Unary Not Expression: Invalid Operand of type 
+                                                %s""" % (str(op_type)), TransformError)
 
-
-
-
-
+        return node
 
     def visit_Name(self, node):
         # Check bool
@@ -237,7 +281,6 @@ class TypeChecker(ast.NodeTransformer):
 
     def visit_Num(self, node):
         #is the following necessary? We split int and float in parse.py
-        print node.n
         if isinstance(node.n, int):
             node.type = int
         elif isinstance(node.n, float):
