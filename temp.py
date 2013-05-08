@@ -1,2 +1,2 @@
-from lib.automata import *
-print 'Hello, world!'
+from lib.automata import *
+print 'Hello, world!'

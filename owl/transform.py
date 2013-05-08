@@ -316,6 +316,7 @@ class ScopeResolver(ast.NodeTransformer):
     """
 
     def visit_Name(self, node):
+        self.generic_visit(node)
         if hasattr(node, 'scope'):
             node.id = '_'*(len(node.scope) + 1) + node.id
         return node
@@ -329,7 +330,9 @@ def transform(tree, filters=[]):
 
 def build_tree(args):
     tree = parse.build_tree(args)
+    symbol_table = tree.symbol_table
     tree = transform(tree)
+    tree.symbol_table = symbol_table
     return tree
 
 def main(args):
