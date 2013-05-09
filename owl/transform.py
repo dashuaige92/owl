@@ -87,24 +87,16 @@ class MachineCodeGenerator(ast.NodeTransformer):
         nodes.append(val)
         return val
 
-
     def visit_Function(self, node):
-
-        if node.body is None:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [ast.Pass()], [])
-
-        elif type(node.body) is not list:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [node.body], [])
-
-        elif len(node.body) is 0:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [ast.Pass()], [])
-
-        else:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), node.body, [])
-
-
+        fun = ast.FunctionDef(
+            name='func_%s' % (node.name,),
+            args=ast.arguments([], None, None, []),
+            body=node.body if len(node.body) > 0 else [ast.Pass()],
+            decorator_list=[],
+            #level=node.level,
+            globals=node.globals,
+        )
         ass = ast.AugAssign(ast.Attribute(ast.Name('%s' % node.name, ast.Load()), 'on_%s' % node.e, ast.Store()), ast.Add(), ast.Name('func_%s' % node.name, ast.Load()))
-
         return [fun, ass]
 
     def visit_Transition(self, node):
@@ -115,18 +107,14 @@ class MachineCodeGenerator(ast.NodeTransformer):
         else:
             arg_name = node.arg.s.split()[0]
             default = False
-
-        if node.body is None:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), [ast.Pass()], [])
-
-        elif type(node.body) is not list:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), [node.body], [])
-
-        elif len(node.body) is 0:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), [ast.Pass()], [])
-        
-        else:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), node.body, [])
+        fun = ast.FunctionDef(
+            name='trans_%s_%s_%s' % (node.left, node.right, arg_name),
+            args=ast.arguments([], None, None, []),
+            body=node.body if len(node.body) > 0 else [ast.Pass()],
+            decorator_list=[],
+            #level=node.level,
+            globals=node.globals,
+        )
 
 
         if default:
@@ -318,6 +306,7 @@ class ScopeResolver(ast.NodeTransformer):
         self.generic_visit(node)
         if hasattr(node, 'level'):
             node.name = '_'*(node.level + 1) + node.name
+        node.body.insert(0, ast.Global(names=['_'*(level+1) + name for level, name in node.globals]))
         return node
 
     def visit_Name(self, node):

@@ -41,11 +41,15 @@ def get_table(scope_stack):
     return reduce(lambda d, k: d[k]['symbols'], scope_stack, symbol_table)
 
 def all_names():
-    """Get all identifiers visible in the current scope."""
+    """Get all names visible in the current scope."""
     return [var for scope in symbol_stack for var in scope]
 
+def global_names():
+    """Get all names visible outside of the local scope, with scope level."""
+    return [(level, var) for level, scope in enumerate(symbol_stack[:-1]) for var in scope]
+
 def local_names():
-    """Get all identifiers in the local scope."""
+    """Get all names in the local scope."""
     return get_table(scope_stack).keys()
 
 def get_type(var_name):
@@ -256,7 +260,7 @@ def p_function_def(p):
     """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
                     | void NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
     """
-    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], level=0)
+    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], level=0, globals=global_names())
     pop_scope()
 
 def p_func_statement_list(p):
@@ -539,7 +543,7 @@ def p_node(p):
 def p_function(p):
     """function : three_es LPAREN NAME new_machine_function_scope RPAREN LBRACE func_statement_list RBRACE
     """ 
-    p[0] = nodes.Function(e=p[1], name=p[3], body=p[7])
+    p[0] = nodes.Function(e=p[1], name=p[3], body=p[7], level=0, globals=global_names())
     pop_scope()
 
 def p_three_es(p):
@@ -557,14 +561,14 @@ def p_transition(p):
                   | NAME LPAREN RPAREN ARROW NAME new_machine_default_transition_scope LBRACE func_statement_list RBRACE
     """
     if len(p) == 8:
-        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[])
+        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[], level=0, globals=global_names())
     elif len(p) == 11:
-        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[9])
+        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[9], level=0, globals=global_names())
         pop_scope()
     elif len(p) == 7:
-        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=[])
+        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=[], level=0, globals=global_names())
     elif len(p) == 10:
-        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=p[8])
+        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=p[8], level=0, globals=global_names())
         pop_scope()
 
 def p_new_machine_function_scope(p):
