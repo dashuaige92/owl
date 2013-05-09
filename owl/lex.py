@@ -71,7 +71,7 @@ tokens = tuple(reserved.values()) + (
     'ARROW',
 )
 
-t_LIT_STRING = r'\"([^\\\n]|(\\.))*?\"'
+t_LIT_STRING = r'\"([^\\\"]|(\\.))*?\"'
 t_LIT_INT = r'[0-9]+'
 t_LIT_FLOAT = r'(([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))'
 

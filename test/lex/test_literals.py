@@ -9,7 +9,6 @@ class TestLiterals(LexerTestCase):
             '"Hello, world!"',
             ('"Hello, world!"', 'LIT_STRING'),
         )
-
     def test_int_literal(self):
         self.assertTokenTypes(
             '3',
