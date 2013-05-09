@@ -76,7 +76,6 @@ class Automaton(object):
             return (None, None)
         token = re.match(self.current_state.token, self.current_input)
 
-        #print token.string
 
         if token is None:
             return (None, None)

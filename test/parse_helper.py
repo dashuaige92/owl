@@ -1,5 +1,6 @@
 import unittest
 import ast
+import difflib
 import warnings
 
 from owl import parse
@@ -31,9 +32,11 @@ class ParserTestCase(unittest.TestCase):
         python_dump = astpp.dump(python_tree)
 
         if owl_dump != python_dump:
+            diff = '\n'.join(difflib.unified_diff(owl_dump.splitlines(), python_dump.splitlines()))
             raise AssertionError('Generated ASTs are not equal.' +
                                  '\n\nOwl:\n' + owl_dump +
-                                 '\n\nPython:\n' + python_dump
+                                 '\n\nPython:\n' + python_dump +
+                                 '\n\n' + diff
                                 )
 
     def assertParseError(self, owl_source):
@@ -78,9 +81,11 @@ class TransformTestCase(ParserTestCase):
         python_dump = astpp.dump(python_tree)
 
         if owl_dump != python_dump:
+            diff = '\n'.join(difflib.unified_diff(owl_dump.splitlines(), python_dump.splitlines()))
             raise AssertionError('Generated ASTs are not equal.' +
                                  '\n\nOwl:\n' + owl_dump +
-                                 '\n\nPython:\n' + python_dump
+                                 '\n\nPython:\n' + python_dump +
+                                 '\n\n' + diff
                                 )
 
     def assertTransformError(self, owl_source,

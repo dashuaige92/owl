@@ -43,7 +43,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                 
         statements = node.body + [
             ast.copy_location(ast.Assign(
-                targets=[ast.Name(id=node.name, ctx=ast.Store())],
+                targets=[ast.Name(id=node.name, ctx=ast.Store(), level=node.level)],
                 value=ast.Call(
                     func=ast.Name(id='Automaton', ctx=ast.Load()),
                     args=[
@@ -66,7 +66,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                     keywords=[],
                     starargs=None,
                     kwargs=None,
-                )
+                ),
             ), node)
         ]
 
@@ -87,24 +87,16 @@ class MachineCodeGenerator(ast.NodeTransformer):
         nodes.append(val)
         return val
 
-
     def visit_Function(self, node):
-
-        if node.body is None:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [ast.Pass()], [])
-
-        elif type(node.body) is not list:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [node.body], [])
-
-        elif len(node.body) is 0:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), [ast.Pass()], [])
-
-        else:
-            fun = ast.FunctionDef('func_%s' % node.name, ast.arguments([], None, None, []), node.body, [])
-
-
+        fun = ast.FunctionDef(
+            name='func_%s' % (node.name,),
+            args=ast.arguments([], None, None, []),
+            body=node.body if len(node.body) > 0 else [ast.Pass()],
+            decorator_list=[],
+            #level=node.level,
+            globals=node.globals,
+        )
         ass = ast.AugAssign(ast.Attribute(ast.Name('%s' % node.name, ast.Load()), 'on_%s' % node.e, ast.Store()), ast.Add(), ast.Name('func_%s' % node.name, ast.Load()))
-
         return [fun, ass]
 
     def visit_Transition(self, node):
@@ -115,18 +107,14 @@ class MachineCodeGenerator(ast.NodeTransformer):
         else:
             arg_name = node.arg.s.split()[0]
             default = False
-
-        if node.body is None:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), [ast.Pass()], [])
-
-        elif type(node.body) is not list:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), [node.body], [])
-
-        elif len(node.body) is 0:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), [ast.Pass()], [])
-        
-        else:
-            fun = ast.FunctionDef('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.arguments([], None, None, []), node.body, [])
+        fun = ast.FunctionDef(
+            name='trans_%s_%s_%s' % (node.left, node.right, arg_name),
+            args=ast.arguments([], None, None, []),
+            body=node.body if len(node.body) > 0 else [ast.Pass()],
+            decorator_list=[],
+            #level=node.level,
+            globals=node.globals,
+        )
 
 
         if default:
@@ -262,7 +250,6 @@ class TypeChecker(ast.NodeTransformer):
                 warnings.warn("""Invalid Unary Minus Expression: Invalid Operand of type
                                                 %s""" % str(op_type), TransformError)
         elif type(node.op) == ast.Not:
-            #print op_type
             if op_type == bool:
                 node.type = bool
             else:
@@ -315,13 +302,27 @@ class ScopeResolver(ast.NodeTransformer):
     Add global keyword when making new function scopes.
     """
 
+    def visit_FunctionDef(self, node):
+        self.generic_visit(node)
+        if hasattr(node, 'level'):
+            node.name = '_'*(node.level + 1) + node.name
+        node.body.insert(0, ast.Global(names=['_'*(level+1) + name for level, name in node.globals]))
+        return node
+
+    def visit_Assign(self, node):
+        self.generic_visit(node)
+        if hasattr(node, 'level'):
+            node.targets[0].id = '_'*(node.level + 1) + node.targets[0].id
+        return node
+
     def visit_Name(self, node):
-        if hasattr(node, 'scope'):
-            node.id = '_'*(len(node.scope) + 1) + node.id
+        self.generic_visit(node)
+        if hasattr(node, 'level'):
+            node.id = '_'*(node.level + 1) + node.id
         return node
 
 def transform(tree, filters=[]):
-    for Transformer in [StandardLibraryAdder, MachineCodeGenerator, TypeChecker, ScopeResolver]:
+    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver]:
         if Transformer not in filters:
             tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)
@@ -329,7 +330,9 @@ def transform(tree, filters=[]):
 
 def build_tree(args):
     tree = parse.build_tree(args)
+    symbol_table = tree.symbol_table
     tree = transform(tree)
+    tree.symbol_table = symbol_table
     return tree
 
 def main(args):

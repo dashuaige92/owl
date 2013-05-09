@@ -41,26 +41,38 @@ def get_table(scope_stack):
     return reduce(lambda d, k: d[k]['symbols'], scope_stack, symbol_table)
 
 def all_names():
-    """Get all identifiers visible in the current scope."""
+    """Get all names visible in the current scope."""
     return [var for scope in symbol_stack for var in scope]
 
+def global_names():
+    """Get all names visible outside of the local scope, with scope level."""
+    return [(level, var) for level, scope in enumerate(symbol_stack[:-1]) for var in scope]
+
 def local_names():
-    """Get all identifiers in the local scope."""
+    """Get all names in the local scope."""
     return get_table(scope_stack).keys()
 
 def get_type(var_name):
-    """Get an identifier's type."""
+    """Get an identifier's scope level and type."""
     for i in range(len(scope_stack) + 1):
         subtable = get_table(scope_stack if i is 0 else scope_stack[:-i])
         if var_name in subtable:
-            return subtable[var_name]['type'] if type(subtable[var_name]) is dict else subtable[var_name]
+            return (len(scope_stack) - i, subtable[var_name]['type'] if type(subtable[var_name]) is dict else subtable[var_name])
+    return (0, None)
 
 def add_symbol(var_name, var_type):
     """Add an identifier in the local scope."""
+    if var_name in local_names():
+        warnings.warn("%s has been declared twice!" % (var_name), ParseError)
+
     symbol_stack[-1].append(var_name)
     get_table(scope_stack)[var_name] = var_type
 
 def push_scope(scope_name, scope_type=None):
+    if scope_name in local_names():
+        warnings.warn("%s declared twice" % (scope_name), ParseError)
+
+    #symbol_stack[-1].append(scope_name)
     get_table(scope_stack)[scope_name] = {
         'type': scope_type, # Return type for function scopes, etc.
         'symbols': {}
@@ -212,7 +224,6 @@ def p_iteration(p):
     elif p[1] == 'for':
         if p[2] not in all_names():
             warnings.warn("%s not declared before for loop!" % (p[2].id,), ParseError)
-        p[2].type = get_type(p[2].id)
         p[0] = ast.For(p[2], p[4], p[6], [])
 
 def p_selection_statement(p):
@@ -229,47 +240,10 @@ def p_statement_list(p):
     """statement_list : statement_list_item
                       | statement_list_item statement_list
     """
-
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = [p[1]] if p[1] is not None else []
     elif len(p) == 3:
-        if p[1] is not None:
-            
-            if p[2] is None:
-                p[0] = p[1]
-
-            elif type(p[2]) == list and type(p[1]) == list:
-                p[0] = p[2] + p[1]
-
-            elif type(p[2]) == list and type(p[1]) != list:
-                p[0] = p[2]
-                p[0].append(p[1])
-
-            elif type(p[2]) != list and type(p[1]) == list:
-                p[0] = p[1]
-                p[0].append(p[2])
-
-            else:
-                p[0] = [p[2]]
-                p[0].append(p[1])
-
-
-#            if type(p[1]) == list:
-#                p[0] = p[1] + ([p[2]] if p[2] is not None else [])
-#            else:
-#                p[0] = [p[1]] + ([p[2]] if p[2] is not None else [])
-
-        else:
-            if p[2] is None:
-                p[0] = p[1]
-
-            elif type(p[2]) == list:
-                p[0] = p[2]
-
-            else:
-                p[0] = [p[2]]
-
-
+        p[0] = ([p[1]] if p[1] is not None else []) + p[2]
 
 def p_statement_list_item(p):
     """statement_list_item : NEWLINE
@@ -293,54 +267,17 @@ def p_function_def(p):
     """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
                     | void NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
     """
-    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1])
+    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], level=0, globals=global_names())
     pop_scope()
 
 def p_func_statement_list(p):
     """func_statement_list : func_statement_list_item
                            | func_statement_list_item func_statement_list
     """
-
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = [p[1]] if p[1] is not None else []
     elif len(p) == 3:
-        if p[1] is not None:
-
-            if p[2] is None:
-                p[0] = p[1]
-            
-            elif type(p[2]) == list and type(p[1]) == list:
-                p[0] = p[2] + p[1]
-        
-            elif type(p[2]) == list and type(p[1]) != list:
-                p[0] = p[2]
-                p[0].append(p[1])
-                    
-            elif type(p[2]) != list and type(p[1]) == list:
-                p[0] = p[1]
-                p[0].append(p[2])
-        
-            else:
-                p[0] = [p[2]]
-                p[0].append(p[1])
-
-
-
-#            if type(p[1]) == list:
-#                p[0] = p[1] + ([p[2]] if p[2] is not None else [])
-#            else:
-#                p[0] = [p[1]] + ([p[2]] if p[2] is not None else [])
-        else:
-
-            if p[2] is None:
-                p[0] = p[1]
-
-            elif type(p[2]) == list:
-                p[0] = p[2]
-
-            else:
-                p[0] = [p[2]]
-
+        p[0] = ([p[1]] if p[1] is not None else []) + p[2]
 
 def p_func_statement_list_item(p):
     """func_statement_list_item : NEWLINE
@@ -390,7 +327,8 @@ def p_params_def(p):
                   |
     """
     if len(p) != 1:
-        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1], scope=scope_stack)
+        add_symbol(p[2], p[1])
+        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1], level=len(scope_stack))
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
@@ -443,13 +381,10 @@ def p_parameters(p):
         p[0] = tmp
 
 def p_initialization(p):
-    """initialization : type variable_store EQUAL expression
-                      | type variable_store
+    """initialization : type variable_init EQUAL expression
+                      | type variable_init
     """
     # Initialization adds a new variable name to the symbol table
-    if p[2].id in local_names():
-        warnings.warn("%s has been declared twice!" % (p[2].id,), ParseError)
-    add_symbol(p[2].id, p[1])
 
     if len(p) == 3:
         # this is for default initialization
@@ -468,6 +403,14 @@ def p_initialization(p):
     else:
           #add type checking here
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
+
+def p_variable_init(p):
+    """variable_init : NAME
+    """
+
+    add_symbol(p[1], p[-1])
+    scope_level, var_type = get_type(p[1])
+    p[0] = ast.Name(p[1], ast.Store(), type=var_type, level=scope_level)
 
 def p_assignment(p):
     """assignment : variable_store EQUAL expression
@@ -564,18 +507,20 @@ def p_bool(p):
 def p_variable_store(p):
     """variable_store : NAME
     """
-    p[0] = ast.Name(p[1], ast.Store(), type=get_type(p[1]), scope=scope_stack[:])
+    scope_level, var_type = get_type(p[1])
+    p[0] = ast.Name(p[1], ast.Store(), type=var_type, level=scope_level)
 
 def p_variable_load(p):
     """variable_load : NAME
     """
-    p[0] = ast.Name(p[1], ast.Load(), type=get_type(p[1]), scope=scope_stack[:])
+    scope_level, var_type = get_type(p[1])
+    p[0] = ast.Name(p[1], ast.Load(), type=var_type, level=scope_level)
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
                | MACHINE NAME EQUAL LBRACE RBRACE
     """
-    p[0] = nodes.Machine(p[2], p[5])
+    p[0] = nodes.Machine(p[2], p[5], level=0)
 
 def p_machine_body(p):
     """machine_body : machine_body_stmt
@@ -608,18 +553,11 @@ def p_node(p):
     p[0] = None if len(p) is 2 else nodes.Node(p[2])
 
 def p_function(p):
-    """function : three_es LPAREN NAME RPAREN LBRACE func_statement_list RBRACE
-    """
 
-    #p[0] = []
-
-    #p[0].append(ast.FunctionDef('func_'+p[3], ast.arguments([], None, None, []), p[6] if p[6] is not None else [ast.Pass()], []))
-
-    #p[0].append(ast.AugAssign(ast.Attribute(ast.Name(p[3], ast.Load()), 'on_'+p[1], ast.Store()), ast.Add(), ast.Name('func_'+p[3], ast.Load())))
-
-
-    p[0] = nodes.Function(e=p[1], name=p[3], body=p[6])
-
+    """function : three_es LPAREN NAME new_machine_function_scope RPAREN LBRACE func_statement_list RBRACE
+    """ 
+    p[0] = nodes.Function(e=p[1], name=p[3], body=p[7], level=0, globals=global_names())
+    pop_scope()
 
 def p_three_es(p):
     """three_es : ENTER
@@ -631,19 +569,38 @@ def p_three_es(p):
 
 def p_transition(p):
     """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN string RPAREN ARROW NAME LBRACE func_statement_list RBRACE
+                  | NAME LPAREN string RPAREN ARROW NAME new_machine_transition_scope LBRACE func_statement_list RBRACE
                   | NAME LPAREN RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN RPAREN ARROW NAME LBRACE func_statement_list RBRACE
+                  | NAME LPAREN RPAREN ARROW NAME new_machine_default_transition_scope LBRACE func_statement_list RBRACE
     """
     if len(p) == 8:
-        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[])
-    elif len(p) == 10:
-        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[8])
+        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[], level=0, globals=global_names())
+    elif len(p) == 11:
+        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[9], level=0, globals=global_names())
+        pop_scope()
     elif len(p) == 7:
-        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=[])
-    else:
-        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=p[7])
+        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=[], level=0, globals=global_names())
+    elif len(p) == 10:
+        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=p[8], level=0, globals=global_names())
+        pop_scope()
 
+def p_new_machine_function_scope(p):
+    """new_machine_function_scope :
+    """
+    push_scope('_func_' + p[-3] + '_' + p[-1], 'void')
+    p[0] = p[-1]
+
+def p_new_machine_transition_scope(p):
+    """new_machine_transition_scope :
+    """
+    push_scope('_trans_' + p[-6] + '_' + p[-1] + '_' + p[-4].s, 'void')
+    p[0] = p[-1]
+
+def p_new_machine_default_transition_scope(p):
+    """new_machine_default_transition_scope :
+    """
+    push_scope('_trans_' + p[-5] + '_' + p[-1], 'void')
+    p[0] = p[-1]
 
 def p_new_scope(p):
     """new_scope :

@@ -1,0 +1,54 @@
+string s
+
+string append(string digit) {
+    s += digit
+    print(s)
+}
+
+machine m = {
+    node a
+    node b
+    node c
+
+    enter(a) {
+        print("is 0 mod 3.")
+    }
+
+    enter(b) {
+        print("is 1 mod 3.")
+    }
+
+    enter(c) {
+        print("is 2 mod 3.")
+    }
+
+    a("0") -> a {
+        append("0")
+    }
+
+    a("1") -> b {
+        append("1")
+    }
+
+    b("0") -> c {
+        append("0")
+    }
+
+    b("1") -> a {
+        append("1")
+    }
+
+    c("0") -> b {
+        append("0")
+    }
+
+    c("1") -> c {
+        append("1")
+    }
+}
+
+m.step("1")
+m.step("1")
+m.step("1")
+m.step("0")
+m.step("1")
