@@ -5,17 +5,18 @@ from test.parse_helper import ParserTestCase
 
 class TestIteration(ParserTestCase):
 
-    @unittest.skip("Symbol table issue unresolved")
+    #@unittest.skip("Symbol table issue unresolved")
     def test_for_loop(self):
         owl = textwrap.dedent(
             r"""
-            int x = 0
+            int x
             for x in l {
                 print("Hello")
             }
             """)
         python = textwrap.dedent(
             r"""
+            x = 0
             for x in l:
                 print 'Hello'
             """)

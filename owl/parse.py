@@ -513,6 +513,7 @@ def p_variable_store(p):
 def p_variable_load(p):
     """variable_load : NAME
     """
+    # check if variable has been declared
     scope_level, var_type = get_type(p[1])
     p[0] = ast.Name(p[1], ast.Load(), type=var_type, level=scope_level)
 
