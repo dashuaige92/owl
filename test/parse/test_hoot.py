@@ -12,3 +12,9 @@ class TestHoot(ParserTestCase):
 		print '\a'
 		""")
 		self.assertAST(owl, python)
+
+	def test_hoot_with_argument_raises_error(self):
+		owl = textwrap.dedent(r"""
+		hoot("hi")
+		""")
+		self.assertParseError(owl)

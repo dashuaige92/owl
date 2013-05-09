@@ -139,7 +139,7 @@ def p_input(p):
         """
     p[0] = ast.Call(func=ast.Name(id='raw_input', ctx=ast.Load()), args=[
                                                              p[3],
-                                                             ], keywords=[], starargs=None, kwargs=None)
+                                                             ], keywords=[], starargs=None, kwargs=None, type=str)
 
 def p_arithmetic_expression(p):
     """arithmetic_expression : expression PLUS expression
@@ -365,8 +365,6 @@ def p_func_statement_list_item_expression(p):
 def p_return_statement(p):
     """return_stmt : RETURN NEWLINE
                    | RETURN expression NEWLINE
-        
-        
     """
     if len(p) == 3:
         p[0] = ast.Return(value=None)
@@ -392,10 +390,14 @@ def p_params_def(p):
                   |
     """
     if len(p) != 1:
-        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1])
+        p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1], scope=scope_stack)
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
+                     | TOINT LPAREN expression RPAREN
+                     | TOBOOL LPAREN expression RPAREN
+                     | TOFLOAT LPAREN expression RPAREN
+                     | TOSTRING LPAREN expression RPAREN
                      | variable_load LPAREN parameters RPAREN
                      | variable_load DOT NAME LPAREN parameters RPAREN
                      | variable_load DOT NAME
@@ -404,6 +406,14 @@ def p_function_call(p):
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True)
+    elif p[1] == 'toInt':
+        p[0] = ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
+    elif p[1] == 'toBool':
+        p[0] = ast.Call(func=ast.Name(id='bool', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=bool)
+    elif p[1] == 'toFloat':
+        p[0] = ast.Call(func=ast.Name(id='float', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=float)
+    elif p[1] == 'toString':
+        p[0] = ast.Call(func=ast.Name(id='str', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=str)
     elif len(p) == 4:
         p[0] = ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
     elif len(p) == 7:
@@ -444,15 +454,15 @@ def p_initialization(p):
     if len(p) == 3:
         # this is for default initialization
         if p[1] == int:
-            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Num(0, type=p[1]), type=p[1])
         elif p[1] == bool:
-            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load(), type=p[1]), type=p[1])
         elif p[1] == float:
-            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Num(0, type=p[1]), type=p[1])
         elif p[1] == str:
-            p[0] = ast.Assign([p[2]], ast.Str(""), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Str("", type=p[1]), type=p[1])
         elif p[1] == list:
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
         else:
             warnings.warn("%s Initialization error" % (str(p[1]),), ParseError)
     else:
@@ -460,11 +470,11 @@ def p_initialization(p):
           p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
 def p_assignment(p):
-    """assignment : NAME EQUAL expression
-                  | NAME PEQUAL expression
-                  | NAME MEQUAL expression
-                  | NAME TEQUAL expression
-                  | NAME DEQUAL expression
+    """assignment : variable_store EQUAL expression
+                  | variable_store PEQUAL expression
+                  | variable_store MEQUAL expression
+                  | variable_store TEQUAL expression
+                  | variable_store DEQUAL expression
     """
     operators = {
         '=' : ast.Eq(),
@@ -475,9 +485,9 @@ def p_assignment(p):
     }
 
     if p[2] == '=':
-        p[0] = ast.Assign(targets=[ast.Name(id=p[1], ctx=ast.Store())], value=p[3])
+        p[0] = ast.Assign(targets=[p[1]], value=p[3], type=p[1].type)
     else:
-        p[0] = ast.AugAssign(target=ast.Name(id=p[1], ctx=ast.Store()),
+        p[0] = ast.AugAssign(target=p[1],
         op=operators[p[2]], value=p[3])
 
 def p_void(p):
@@ -516,7 +526,7 @@ def p_number_float(p):
 def p_string(p):
     """string : LIT_STRING
     """
-    p[0] = ast.Str(p[1][1:-1])
+    p[0] = ast.Str(p[1][1:-1], type=str)
 
 #def p_trans_string(p):
 #    """trans_string : LIT_STRING
@@ -546,20 +556,20 @@ def p_bool(p):
             | FALSE
     """
     if p[1] == "true":
-        p[0] = ast.Name("True", ast.Load())
+        p[0] = ast.Name("True", ast.Load(), type=bool)
     else:
-        p[0] = ast.Name("False", ast.Load())
+        p[0] = ast.Name("False", ast.Load(), type=bool)
 
 # Use variable_store and variable_load instead of NAME for variables
 def p_variable_store(p):
     """variable_store : NAME
     """
-    p[0] = ast.Name(p[1], ast.Store())
+    p[0] = ast.Name(p[1], ast.Store(), type=get_type(p[1]), scope=scope_stack[:])
 
 def p_variable_load(p):
     """variable_load : NAME
     """
-    p[0] = ast.Name(p[1], ast.Load(), type=get_type(p[1]))
+    p[0] = ast.Name(p[1], ast.Load(), type=get_type(p[1]), scope=scope_stack[:])
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
@@ -606,6 +616,7 @@ def p_function(p):
     #p[0].append(ast.FunctionDef('func_'+p[3], ast.arguments([], None, None, []), p[6] if p[6] is not None else [ast.Pass()], []))
 
     #p[0].append(ast.AugAssign(ast.Attribute(ast.Name(p[3], ast.Load()), 'on_'+p[1], ast.Store()), ast.Add(), ast.Name('func_'+p[3], ast.Load())))
+
 
     p[0] = nodes.Function(e=p[1], name=p[3], body=p[6])
 

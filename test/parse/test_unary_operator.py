@@ -19,7 +19,7 @@ class TestUnaryOp(ParserTestCase):
 	def test_unary_minus(self):
 		owl = textwrap.dedent(
 			r"""
-			not True
+			not true
 			""")
 		python = textwrap.dedent(
 			r"""

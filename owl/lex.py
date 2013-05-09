@@ -36,12 +36,18 @@ reserved = {
     'else'    : 'ELSE',
     'range'   : 'RANGE',
 
-    'machine' : 'MACHINE',
-    'node'    : 'NODE',
-    
-    'enter'    : 'ENTER',
-    'exit'    : 'EXIT',
-    'end'    : 'END',
+    'machine'   : 'MACHINE',
+    'node'      : 'NODE',
+
+    'enter'     : 'ENTER',
+    'exit'      : 'EXIT',
+    'end'       : 'END',
+
+    # Typecasting
+    'toInt'     : 'TOINT',
+    'toBool'    : 'TOBOOL',
+    'toFloat'   : 'TOFLOAT',
+    'toString'  : 'TOSTRING',
 }
 
 tokens = tuple(reserved.values()) + (
