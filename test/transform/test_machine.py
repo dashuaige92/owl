@@ -36,7 +36,6 @@ class TestMachine(TransformTestCase):
         
         self.assertTransformedAST(owl, python)
 
-    #@unittest.skip("Refactoring")
     def test_machine_trans(self):
         owl = textwrap.dedent(r"""
             machine m3 = {
@@ -62,7 +61,6 @@ class TestMachine(TransformTestCase):
 
         self.assertTransformedAST(owl, python)
 
-    #@unittest.skip("Refactoring")
     def test_machine_trans_2(self):
         owl = textwrap.dedent(r"""
             machine m4 = {
@@ -90,8 +88,6 @@ class TestMachine(TransformTestCase):
 
         self.assertTransformedAST(owl, python)
 
-
-    #@unittest.skip("Not yet implemented")
     def test_machine_func(self):
         owl = textwrap.dedent(r"""
             machine m5 = {
@@ -127,7 +123,6 @@ class TestMachine(TransformTestCase):
 
         self.assertTransformedAST(owl, python)
 
-    #@unittest.skip("Not yet implemented")
     def test_machine_func_default_trans(self):
         owl = textwrap.dedent(r"""
             machine m5 = {

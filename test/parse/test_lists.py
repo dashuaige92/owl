@@ -40,7 +40,6 @@ class TestLists(ParserTestCase):
         """)
         self.assertAST(owl, python)
 
-    #@unittest.skip("Not implemented")
     def test_expression_in_index(self):
         owl = textwrap.dedent(
             r"""
