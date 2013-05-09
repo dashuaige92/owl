@@ -599,7 +599,7 @@ def p_node(p):
 
 def p_function(p):
     """function : three_es LPAREN NAME RPAREN LBRACE func_statement_list RBRACE
-    """ 
+    """
 
     #p[0] = []
 

@@ -76,7 +76,7 @@ class Automaton(object):
             return (None, None)
         token = re.match(self.current_state.token, self.current_input)
 
-        print token.string
+        #print token.string
 
         if token is None:
             return (None, None)
@@ -138,34 +138,34 @@ class Automaton(object):
         self.current_state.on_enter.fire()
         return True
 
-    def run(self, string='', streamed=False):
-        """Step to the end of the input stream, or until no match is found.
+#    def run(self, string='', streamed=False):
+#        """Step to the end of the input stream, or until no match is found.
+#
+#        Returns False if no match is found.
+#        If the end of the input stream is reached, the automaton is reset.
+#        Setting @streamed to True disables this.
+#        """
+#        self.stream(string)
+#        while self.current_state and self.current_input:
+#            if not self.step():
+#                break
+#        if len(self.current_input) == 0:
+#            if not streamed:
+#                self.current_state.on_end.fire()
+#                self.reset()
+#            return True
+#        else:
+#            if not streamed:
+#                self.on_reject.fire()
+#                self.reset()
+#            return False
 
-        Returns False if no match is found.
-        If the end of the input stream is reached, the automaton is reset.
-        Setting @streamed to True disables this.
-        """
-        self.stream(string)
-        while self.current_state and self.current_input:
-            if not self.step():
-                break
-        if len(self.current_input) == 0:
-            if not streamed:
-                self.current_state.on_end.fire()
-                self.reset()
-            return True
-        else:
-            if not streamed:
-                self.on_reject.fire()
-                self.reset()
-            return False
-
-    def reset(self):
-        """Return the automaton to the start state. Flush the input stream.
-        """
-        self.current_state = self.start_state
-        self.current_input = ''
-        self.begin = True
+#    def reset(self):
+#        """Return the automaton to the start state. Flush the input stream.
+#        """
+#        self.current_state = self.start_state
+#        self.current_input = ''
+#        self.begin = True
 
 
 

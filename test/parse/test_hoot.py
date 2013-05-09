@@ -3,8 +3,8 @@ import textwrap
 
 from test.parse_helper import ParserTestCase
 
-class TestInput(ParserTestCase):
-	def test_input(self):
+class TestHoot(ParserTestCase):
+	def test_hoot(self):
 		owl = textwrap.dedent(r"""
 		hoot()
 		""")
