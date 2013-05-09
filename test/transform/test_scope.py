@@ -23,7 +23,6 @@ class TestScope(TransformTestCase):
             """)
         self.assertParseError(owl)
 
-    #@unittest.skip("Pending")
     def test_redeclaration_in_new_scope(self):
         owl = textwrap.dedent(
             r"""
@@ -43,7 +42,6 @@ class TestScope(TransformTestCase):
             """)
         self.assertTransformedAST(owl, python, transform_filters=[transform.StandardLibraryAdder])
 
-    #@unittest.skip("Pending")
     def test_global_accessibility_in_new_scope(self):
         owl = textwrap.dedent(
             r"""
@@ -63,7 +61,6 @@ class TestScope(TransformTestCase):
             """)
         self.assertTransformedAST(owl, python, transform_filters=[transform.StandardLibraryAdder])
 
-    #@unittest.skip("Pending")
     def test_redeclaration_in_new_scope_after_assignment(self):
         owl = textwrap.dedent(
             r"""

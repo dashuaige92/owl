@@ -26,7 +26,6 @@ reserved = {
     'bool'    : 'BOOL',
     'float'   : 'FLOAT',
     'string'  : 'STRING',
-    'list'    : 'LIST',
 
     'for'     : 'FOR',
     'in'      : 'IN',
