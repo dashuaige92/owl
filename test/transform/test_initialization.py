@@ -17,7 +17,7 @@ class TestInitialization(TransformTestCase):
 
 	def test_list_init_invalid(self):
 		owl = textwrap.dedent(r"""
-				list l = [1, "2", "3"]
+				int[] l = [1, "2", "3"]
 				""")
 		self.assertTransformError(owl)
 

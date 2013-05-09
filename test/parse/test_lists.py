@@ -40,19 +40,19 @@ class TestLists(ParserTestCase):
         """)
         self.assertAST(owl, python)
 
-    @unittest.skip("Not implemented")
+    #@unittest.skip("Not implemented")
     def test_expression_in_index(self):
         owl = textwrap.dedent(
             r"""
-            list s = [3, 4]
+            int[] s = [3, 4]
             s[0]
-            s[0 + 1]
+            s[1]
             """)
         python = textwrap.dedent(
             r"""
             s = [3, 4]
             s[0]
-            s[0 + 1]
+            s[1]
             """)
         self.assertAST(owl, python)
 

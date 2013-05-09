@@ -175,6 +175,7 @@ class TypeChecker(ast.NodeTransformer):
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
+
         if node.type != node.value.type:
             warnings.warn("""Cannot assign type %s
                 to variable of type %s""" % (str(node.value.type),
@@ -193,7 +194,7 @@ class TypeChecker(ast.NodeTransformer):
 
         if l_type in self.arith_types and r_type in self.arith_types:
             # Valid 
-            if l_type == float or r_type == float:
+            if l_type == float and r_type == float:
                 node.type = float
             else:
                 node.type = int
