@@ -50,7 +50,7 @@ class TestInitialization(ParserTestCase):
 
     def test_declare_init_list(self):
         owl = textwrap.dedent(r"""
-        list l = ["Andrew"]
+        string[] l = ["Andrew"]
         """)
         python = textwrap.dedent(r"""l = ["Andrew"]
         """)
@@ -105,7 +105,7 @@ class TestInitialization(ParserTestCase):
     def test_declare_list(self):
         owl = textwrap.dedent(
             r"""
-            list l
+            int[] l
             """)
         python = textwrap.dedent(
             r"""

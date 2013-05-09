@@ -389,20 +389,29 @@ def p_initialization(p):
     if len(p) == 3:
         # this is for default initialization
         if p[1] == int:
-            p[0] = ast.Assign([p[2]], ast.Num(0, type=p[1]), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
         elif p[1] == bool:
-            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load(), type=p[1]), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Name("False", ast.Load()), type=p[1])
         elif p[1] == float:
-            p[0] = ast.Assign([p[2]], ast.Num(0, type=p[1]), type=p[1])
+            p[0] = ast.Assign([p[2]], ast.Num(0), type=p[1])
         elif p[1] == str:
-            p[0] = ast.Assign([p[2]], ast.Str("", type=p[1]), type=p[1])
-        elif p[1] == list:
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.Str(""), type=p[1])
+
+        #check correctness
+        elif p[1] == (list,int):
+            #p[1][0] - accesses first element of tuple, use '1' for second elem
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+        elif p[1] == (list,bool):
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+        elif p[1] == (list,float):
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+        elif p[1] == (list,str):
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+
         else:
             warnings.warn("%s Initialization error" % (str(p[1]),), ParseError)
     else:
-          #add type checking here
-          p[0] = ast.Assign([p[2]], p[4], type=p[1])
+        p[0] = ast.Assign([p[2]], p[4], type=p[1])
 
 def p_variable_init(p):
     """variable_init : NAME
@@ -443,19 +452,31 @@ def p_type(p):
             | BOOL
             | FLOAT
             | STRING
-            | LIST
+            | INT LBRACK RBRACK
+            | BOOL LBRACK RBRACK
+            | FLOAT LBRACK RBRACK
+            | STRING LBRACK RBRACK
     """
-    if p[1] == 'int':
-        p[0] = int
-    elif p[1] == 'bool':
-        p[0] = bool
-    elif p[1] == 'float':
-        p[0] = float
-    elif p[1] == 'string':
-        p[0] = str
-    elif p[1] == 'list':
-        p[0] = list
-  
+    if len(p) == 2:
+        if p[1] == 'int':
+            p[0] = int
+        elif p[1] == 'bool':
+            p[0] = bool
+        elif p[1] == 'float':
+            p[0] = float
+        elif p[1] == 'string':
+            p[0] = str
+
+    elif len(p) == 4: #list types
+        if p[1] == 'int':
+            p[0] = (list,int)
+        elif p[1] == 'bool':
+            p[0] = (list,bool)
+        elif p[1] == 'float':
+            p[0] = (list,float)
+        elif p[1] == 'string':
+            p[0] = (list,str)
+
 def p_number_int(p):
     """number : LIT_INT
     """
@@ -482,7 +503,7 @@ def p_list(p):
             | RANGE LPAREN number COMMA number RPAREN
     """
     if p[1] == '[':
-        p[0] = ast.List(p[2], ast.Load())
+        p[0] = ast.List(p[2], ast.Load(), type=list)
 
     elif p[1] == 'range' and p[4] == ',':
         p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[

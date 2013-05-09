@@ -16,7 +16,7 @@ class TestInitialization(TransformTestCase):
 		self.assertTransformedAST(owl, python)
 	def test_list_assign_valid(self):
 		owl = textwrap.dedent(r"""
-				list l = []
+				int[] l = []
 				l = [1, 2, 3]
 				""")
 		python = textwrap.dedent(r"""
@@ -48,7 +48,7 @@ class TestInitialization(TransformTestCase):
 
 	def test_list_assign_invalid(self):
 		owl = textwrap.dedent(r"""
-				list num_list
+				int[] num_list
 				num_list = [1, "2", "3"]
 				""")
 		self.assertTransformError(owl)
