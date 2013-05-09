@@ -43,7 +43,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                 
         statements = node.body + [
             ast.copy_location(ast.Assign(
-                targets=[ast.Name(id=node.name, ctx=ast.Store())],
+                targets=[ast.Name(id=node.name, ctx=ast.Store(), level=node.level)],
                 value=ast.Call(
                     func=ast.Name(id='Automaton', ctx=ast.Load()),
                     args=[
@@ -66,7 +66,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                     keywords=[],
                     starargs=None,
                     kwargs=None,
-                )
+                ),
             ), node)
         ]
 
@@ -315,10 +315,16 @@ class ScopeResolver(ast.NodeTransformer):
     Add global keyword when making new function scopes.
     """
 
+    def visit_FunctionDef(self, node):
+        self.generic_visit(node)
+        if hasattr(node, 'level'):
+            node.name = '_'*(node.level + 1) + node.name
+        return node
+
     def visit_Name(self, node):
         self.generic_visit(node)
-        if hasattr(node, 'scope'):
-            node.id = '_'*(len(node.scope) + 1) + node.id
+        if hasattr(node, 'level'):
+            node.id = '_'*(node.level + 1) + node.id
         return node
 
 def transform(tree, filters=[]):

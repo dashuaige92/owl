@@ -9,8 +9,8 @@ from errors import LexError
 reserved = {
     'print'   : 'PRINT',
 
-    'true'    : 'TRUE' ,
-    'false'   : 'FALSE' ,
+    'true'    : 'TRUE',
+    'false'   : 'FALSE',
 
     'input'   : 'INPUT',
     'hoot'    : 'HOOT',
