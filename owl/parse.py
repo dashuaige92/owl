@@ -400,13 +400,13 @@ def p_initialization(p):
         #check correctness
         elif p[1] == (list,int):
             #p[1][0] - accesses first element of tuple, use '1' for second elem
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
         elif p[1] == (list,bool):
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
         elif p[1] == (list,float):
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
         elif p[1] == (list,str):
-            p[0] = ast.Assign([p[2]], ast.List([], ast.Load()), type=p[1]) #check correctness
+            p[0] = ast.Assign([p[2]], ast.List([], ast.Load(), type=p[1]), type=p[1]) #check correctness
 
         else:
             warnings.warn("%s Initialization error" % (str(p[1]),), ParseError)
