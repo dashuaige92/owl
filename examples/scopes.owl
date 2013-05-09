@@ -1,6 +1,14 @@
 int x
 bool y
 
-int f(int z, int x) {
-    int y
+machine m = {
+    node s
+
+    s() -> s {
+        int z = "hi"
+    }
+}
+
+int f(int a, int b) {
+   int y
 }

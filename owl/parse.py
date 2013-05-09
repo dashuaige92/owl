@@ -308,19 +308,14 @@ def p_return_statement(p):
     else:
         p[0] = ast.Return(value=p[2])
 
-
 def p_params_def_list(p):
     """params_def_list : params_def
                        | params_def COMMA params_def_list
-
     """
     if len(p) == 2:
-        if p[1] is None:
-            p[0] = []
-        else:
-            p[0] = [p[1]]
-    else:
-        p[0] = list(p[3]).insert(0, p[1])
+        p[0] = [p[1]] if p[1] is not None else []
+    elif len(p) == 4:
+        p[0] = ([p[1]] if p[1] is not None else []) + p[3]
 
 def p_params_def(p):
     """params_def : type NAME
@@ -491,11 +486,6 @@ def p_string(p):
     """string : LIT_STRING
     """
     p[0] = ast.Str(p[1][1:-1], type=str)
-
-#def p_trans_string(p):
-#    """trans_string : LIT_STRING
-#        """
-#    p[0] = p[1][1:-1]
 
 def p_list(p):
     """list : LBRACK parameters RBRACK
