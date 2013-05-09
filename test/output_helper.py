@@ -19,7 +19,7 @@ class OutputTestCase(unittest.TestCase):
         f.close()
 
         output = ''
-        proc2 = subprocess.Popen(['python','temp.py'],stdout=subprocess.PIPE)
+        proc2 = subprocess.Popen(['python','temp.py'],universal_newlines=True,stdout=subprocess.PIPE)
         while True:
             line = proc2.stdout.readline()
             if line != '':
@@ -27,8 +27,8 @@ class OutputTestCase(unittest.TestCase):
             else:
                 break
 
-        if output.rstrip() != expected_output.rstrip():
+        if output != expected_output:
             raise AssertionError('Owl output does not match expected output!' +
-                                 '\n\nOutput:\n' + output +
-                                 '\n\nExpected:\n' + expected_output
+                                 '\n\nOutput:\n' + repr(output) +
+                                 '\n\nExpected:\n' + repr(expected_output)
                                 )
