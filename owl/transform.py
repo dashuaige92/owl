@@ -262,7 +262,6 @@ class TypeChecker(ast.NodeTransformer):
                 warnings.warn("""Invalid Unary Minus Expression: Invalid Operand of type
                                                 %s""" % str(op_type), TransformError)
         elif type(node.op) == ast.Not:
-            print op_type
             if op_type == bool:
                 node.type = bool
             else:

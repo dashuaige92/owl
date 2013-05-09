@@ -229,47 +229,10 @@ def p_statement_list(p):
     """statement_list : statement_list_item
                       | statement_list_item statement_list
     """
-
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = [p[1]] if p[1] is not None else []
     elif len(p) == 3:
-        if p[1] is not None:
-            
-            if p[2] is None:
-                p[0] = p[1]
-
-            elif type(p[2]) == list and type(p[1]) == list:
-                p[0] = p[2] + p[1]
-
-            elif type(p[2]) == list and type(p[1]) != list:
-                p[0] = p[2]
-                p[0].append(p[1])
-
-            elif type(p[2]) != list and type(p[1]) == list:
-                p[0] = p[1]
-                p[0].append(p[2])
-
-            else:
-                p[0] = [p[2]]
-                p[0].append(p[1])
-
-
-#            if type(p[1]) == list:
-#                p[0] = p[1] + ([p[2]] if p[2] is not None else [])
-#            else:
-#                p[0] = [p[1]] + ([p[2]] if p[2] is not None else [])
-
-        else:
-            if p[2] is None:
-                p[0] = p[1]
-
-            elif type(p[2]) == list:
-                p[0] = p[2]
-
-            else:
-                p[0] = [p[2]]
-
-
+        p[0] = ([p[1]] if p[1] is not None else []) + p[2]
 
 def p_statement_list_item(p):
     """statement_list_item : NEWLINE
@@ -300,47 +263,10 @@ def p_func_statement_list(p):
     """func_statement_list : func_statement_list_item
                            | func_statement_list_item func_statement_list
     """
-
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = [p[1]] if p[1] is not None else []
     elif len(p) == 3:
-        if p[1] is not None:
-
-            if p[2] is None:
-                p[0] = p[1]
-            
-            elif type(p[2]) == list and type(p[1]) == list:
-                p[0] = p[2] + p[1]
-        
-            elif type(p[2]) == list and type(p[1]) != list:
-                p[0] = p[2]
-                p[0].append(p[1])
-                    
-            elif type(p[2]) != list and type(p[1]) == list:
-                p[0] = p[1]
-                p[0].append(p[2])
-        
-            else:
-                p[0] = [p[2]]
-                p[0].append(p[1])
-
-
-
-#            if type(p[1]) == list:
-#                p[0] = p[1] + ([p[2]] if p[2] is not None else [])
-#            else:
-#                p[0] = [p[1]] + ([p[2]] if p[2] is not None else [])
-        else:
-
-            if p[2] is None:
-                p[0] = p[1]
-
-            elif type(p[2]) == list:
-                p[0] = p[2]
-
-            else:
-                p[0] = [p[2]]
-
+        p[0] = ([p[1]] if p[1] is not None else []) + p[2]
 
 def p_func_statement_list_item(p):
     """func_statement_list_item : NEWLINE
@@ -656,7 +582,7 @@ def p_new_machine_transition_scope(p):
 def p_new_machine_default_transition_scope(p):
     """new_machine_default_transition_scope :
     """
-    push_scope('_trans_' + p[-6] + '_' + p[-1], 'void')
+    push_scope('_trans_' + p[-5] + '_' + p[-1], 'void')
     p[0] = p[-1]
 
 def p_new_scope(p):
