@@ -1,5 +1,6 @@
 import sys
 import ast
+import hashlib
 import warnings
 
 import lib.astpp as astpp
@@ -105,7 +106,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
             arg_name = "default_transition"
             default = True
         else:
-            arg_name = node.arg.s.split()[0]
+            arg_name = hashlib.md5(node.arg.s).hexdigest()
             default = False
         fun = ast.FunctionDef(
             name='trans_%s_%s_%s' % (node.left, node.right, arg_name),
