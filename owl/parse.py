@@ -334,8 +334,7 @@ def p_function_call(p):
                      | variable_load LPAREN parameters RPAREN
                      | variable_load DOT NAME LPAREN parameters RPAREN
                      | variable_load DOT NAME
-                     | variable_load LBRACK LIT_INT RBRACK
-
+                     | variable_load LBRACK expression RBRACK
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True)
@@ -353,9 +352,10 @@ def p_function_call(p):
         p[0] = ast.Call(func=ast.Attribute(value=p[1], \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
+        # [TODO] Typecheck expression for int
         if p[2] == '[':
             p[0] = ast.Subscript(value=p[1], \
-                slice=ast.Index(value=ast.Num(n=int(p[3]))), ctx=ast.Load())
+                slice=ast.Index(value=p[3]), ctx=ast.Load())
         elif p[2] == '(':
             p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None)

@@ -81,7 +81,11 @@ t_RBRACK  = r'\]'
 t_LBRACE  = r'\{'
 t_RBRACE  = r'\}'
 t_COMMA   = r','
-t_NEWLINE = r'\n'
+#t_NEWLINE = r'\n'
+def t_NEWLINE(t):
+    r'\n'
+    t.lexer.lineno += 1
+    return t
 
 t_EQUAL   = r'='
 t_PEQUAL  = r'\+='

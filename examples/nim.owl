@@ -1,9 +1,10 @@
-list stacks = [3, 4, 5]
+bool running
+int[] stacks = [3, 4, 5]
 
 bool gameOver() {
     int s
     for s in stacks {
-        if s != 0 {
+        if (s != 0) {
             return false
         }
     }
@@ -17,8 +18,7 @@ machine nim = {
         print("Current stacks:\n")
         int s
         for s in stacks {
-            # Need typecasting
-            print(asStr(s) + " ")
+            print(toString(s) + " ")
         }
         print("\n")
         print("Remove X chips from stack Y (X, Y): ")
@@ -26,28 +26,24 @@ machine nim = {
 
     # Need regex support
     move("(\d+),\s+(\d+)") -> move {
-        int chips = asInt($1)
-        int s = asInt($2)
+        int chips = toInt(1)
+        int s = toInt(2)
 
-        if stacks[s] < chips {
+        if (stacks[s] < chips) {
             return
         }
         stacks[s] -= chips
-        if gameOver() {
+        if (gameOver)() {
             print("You win!")
-            # Need goto
-            goto(dead)
+            running = false
         }
     }
 
-    # Need default transition
     move() -> move {
         print("Invalid input")
     }
 }
 
-# Need state detection
-while nim.alive() {
-    # Need stdin
-    nim.step(input())
+while running {
+    nim.step(input(""))
 }
