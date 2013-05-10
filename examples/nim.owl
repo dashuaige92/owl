@@ -1,5 +1,5 @@
 bool running
-int[] stacks# = [3, 4, 5]
+int[] stacks = [3, 4, 5]
 
 bool gameOver() {
     int s
@@ -15,7 +15,7 @@ machine nim = {
     node move
 
     enter(move) {
-        print("Current stacks:\n")
+        print("Current stacks:")
         int s
         for s in stacks {
             print(toString(s) + " ")

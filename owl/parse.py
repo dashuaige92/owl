@@ -222,7 +222,7 @@ def p_iteration(p):
     if p[1] == 'while':
         p[0] = ast.While(p[3], p[6], [])
     elif p[1] == 'for':
-        if p[2] not in all_names():
+        if p[2].id not in all_names():
             warnings.warn("%s not declared before for loop!" % (p[2].id,), ParseError)
         p[0] = ast.For(p[2], p[4], p[6], [])
 
@@ -359,7 +359,7 @@ def p_function_call(p):
                 value=p[1],
                 slice=ast.Index(value=p[3]),
                 ctx=ast.Load(),
-                type=p[1].type)
+                )
         elif p[2] == '(':
             p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
@@ -422,6 +422,7 @@ def p_assignment(p):
                   | variable_store TEQUAL expression
                   | variable_store DEQUAL expression
     """
+                  #| variable_store LBRACK expression RBRACK EQUAL expression
     operators = {
         '=' : ast.Eq(),
         '+=': ast.Add(),
@@ -429,12 +430,21 @@ def p_assignment(p):
         '*=': ast.Mult(),
         '/=': ast.Div(),
     }
+    if len(p) == 4:
+        target = p[1]
+        value = p[3]
+    elif len(p) == 6:
+        target = ast.Subscript(
+            value=p[1],
+            slice=ast.Index(value=p[3]),
+            ctx=ast.Load(),
+            )
+        value = p[6]
 
     if p[2] == '=':
-        p[0] = ast.Assign(targets=[p[1]], value=p[3], type=p[1].type)
+        p[0] = ast.Assign(targets=[target], value=value, type=p[1].type)
     else:
-        p[0] = ast.AugAssign(target=p[1],
-        op=operators[p[2]], value=p[3])
+        p[0] = ast.AugAssign(target=target, op=operators[p[2]], value=value)
 
 def p_void(p):
     """void : VOID
@@ -620,8 +630,7 @@ def p_new_scope(p):
     p[0] = p[-1]
 
 def p_error(p):
-    warnings.warn("Syntax error on line %d at token %s!" % (p.lineno, str(p)), ParseError)
-    yacc.errok()
+    warnings.warn("Syntax error on line %d at token %s!" % (getattr(p, 'lineno', 0), str(p)), ParseError)
 
 parser = yacc.yacc()
 

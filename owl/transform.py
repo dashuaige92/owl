@@ -175,7 +175,7 @@ class TypeChecker(ast.NodeTransformer):
 
     def visit_Subscript(self, node):
         self.generic_visit(node)
-        node.type = node.type[1]
+        node.type = node.value.type[1]
         return node
 
     def visit_Index(self, node):
