@@ -355,8 +355,11 @@ def p_function_call(p):
     elif len(p) == 5:
         # [TODO] Typecheck expression for int
         if p[2] == '[':
-            p[0] = ast.Subscript(value=p[1], \
-                slice=ast.Index(value=p[3]), ctx=ast.Load())
+            p[0] = ast.Subscript(
+                value=p[1],
+                slice=ast.Index(value=p[3]),
+                ctx=ast.Load(),
+                type=p[1].type)
         elif p[2] == '(':
             p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
@@ -618,6 +621,7 @@ def p_new_scope(p):
 
 def p_error(p):
     warnings.warn("Syntax error on line %d at token %s!" % (p.lineno, str(p)), ParseError)
+    yacc.errok()
 
 parser = yacc.yacc()
 

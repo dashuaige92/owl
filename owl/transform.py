@@ -168,9 +168,21 @@ class MachineCodeGenerator(ast.NodeTransformer):
 
 class TypeChecker(ast.NodeTransformer): 
 
-    arith_types = set([int, float])
-    str_comp = set([ast.Eq, ast.NotEq])
-    list_types = set([int, float, str, bool])
+    arith_types = [int, float]
+    concat_types = [str, list]
+    str_comp = [ast.Eq, ast.NotEq]
+    list_types = [int, float, str, bool]
+
+    def visit_Subscript(self, node):
+        self.generic_visit(node)
+        node.type = node.type[1]
+        return node
+
+    def visit_Index(self, node):
+        self.generic_visit(node)
+        if hasattr(node.value, 'type') and node.value.type is not int:
+            warnings.warn("List index must be an integer!", TransformError)
+        return node
 
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
@@ -192,16 +204,19 @@ class TypeChecker(ast.NodeTransformer):
         l_type = node.left.type
         r_type = node.right.type
 
+        # Numbers
         if l_type in self.arith_types and r_type in self.arith_types:
-            # Valid 
-            if l_type == float and r_type == float:
-                node.type = float
-            else:
+            if l_type == int and r_type == int:
                 node.type = int
+            else:
+                node.type = float
+        # Concatenation of strings and lists
+        elif type(node.op) is ast.Add and l_type == r_type and l_type in self.concat_types:
+            node.type = l_type
         else:
             warnings.warn("""Invalid Arithmetic Expression: performing Binary Operation
                 with types %s and %s""" % (str(l_type), str(r_type)), TransformError)
-            node.type = int # Should I not assign this?
+            node.type = None
         return node
 
     def visit_Compare(self, node):
