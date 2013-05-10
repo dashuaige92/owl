@@ -360,28 +360,23 @@ def p_function_call(p):
         elif p[2] == '(':
             p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None)
-        # Owl doesn't have keyword arguments, *args, or *kwargs
-
 
 def p_parameters(p):
     """parameters    : expression
                      | expression COMMA parameters
+                     |
     """
-    # How to have one list and add all parameters to it across multiple reductions?
-    #i.e. test(1, 2, 3, 4, 5...)
     if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        tmp = list(p[3])
-        tmp.insert(0, p[1])
-        p[0] = tmp
+        p[0] = [p[1]] if p[1] is not None else []
+    elif len(p) == 4:
+        p[0] = ([p[1]] if p[1] is not None else []) + p[3]
+    elif len(p) == 1:
+        p[0] = []
 
 def p_initialization(p):
     """initialization : type variable_init EQUAL expression
                       | type variable_init
     """
-    # Initialization adds a new variable name to the symbol table
-
     if len(p) == 3:
         # this is for default initialization
         if p[1] == int:
