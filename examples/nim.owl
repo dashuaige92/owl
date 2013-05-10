@@ -1,5 +1,5 @@
 bool running
-int[] stacks = [3, 4, 5]
+int[] stacks# = [3, 4, 5]
 
 bool gameOver() {
     int s
@@ -32,7 +32,7 @@ machine nim = {
         if (stacks[s] < chips) {
             return
         }
-        stacks[s] -= chips
+        # stacks[s] -= chips
         if (gameOver()) {
             print("You win!")
             running = false
@@ -44,6 +44,6 @@ machine nim = {
     }
 }
 
-while running {
+while (running) {
     nim.step(input(""))
 }

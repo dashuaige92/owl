@@ -20,7 +20,7 @@ class TestFunctionCall(ParserTestCase):
 			""")
 		python = textwrap.dedent(
             r"""
-                           test()
+            test()
 			""")		
 		self.assertAST(owl, python)
 
