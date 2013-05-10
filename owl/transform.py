@@ -170,7 +170,7 @@ class TypeChecker(ast.NodeTransformer):
 
     arith_types = set([int, float])
     str_comp = set([ast.Eq, ast.NotEq])
-
+    list_types = set([int, float, str, bool])
 
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
@@ -285,17 +285,16 @@ class TypeChecker(ast.NodeTransformer):
         return node
 
     def visit_List(self, node):
-        self.generic_visit(node)
+        self.generic_visit(node)  
         tmp = node.elts
         if any(tmp):
-            var_type = tmp[0].type
-            # Right now just checking if all types are the same
-            for node in tmp:
-                if node.type != var_type:
-                    warnings.warn("""List entries must be of type %s""" % var_type, 
+            list_type = tmp[0].type
+            for i in tmp:
+                if i.type != list_type:
+                    warnings.warn("""List entries must be of type %s""" % list_type, 
                                                                 TransformError)
                     break
-            node.type = list
+            node.type = (list, list_type)
         return node
 
 class ScopeResolver(ast.NodeTransformer):

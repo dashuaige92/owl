@@ -3,7 +3,7 @@ import textwrap
 
 from test.parse_helper import TransformTestCase
 
-class TestInitialization(TransformTestCase):
+class TestAssign(TransformTestCase):
 	def test_str_assign_valid(self):
 		owl = textwrap.dedent(r"""
 				string s = "hello"
@@ -16,13 +16,10 @@ class TestInitialization(TransformTestCase):
 		self.assertTransformedAST(owl, python)
 	def test_list_assign_valid(self):
 		owl = textwrap.dedent(r"""
-				int[] l = []
+				int[] l
 				l = [1, 2, 3]
 				""")
-		python = textwrap.dedent(r"""
-				l = []
-				l = [1, 2, 3]
-				""")
+		self.assertNoTransformError(owl)
 
 	# Invalid Tests
 	def test_str_assign_invalid(self):
