@@ -605,15 +605,10 @@ def p_transition(p):
                   | NAME LPAREN RPAREN ARROW NAME NEWLINE
                   | NAME LPAREN RPAREN ARROW NAME new_machine_default_transition_scope LBRACE func_statement_list RBRACE
     """
-    if len(p) == 8:
-        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=[], level=0, globals=global_names())
-    elif len(p) == 11:
-        p[0] = nodes.Transition(left=p[1], arg=p[3], right=p[6], body=p[9], level=0, globals=global_names())
-        pop_scope()
-    elif len(p) == 7:
-        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=[], level=0, globals=global_names())
-    elif len(p) == 10:
-        p[0] = nodes.Transition(left=p[1], arg=[], right=p[5], body=p[8], level=0, globals=global_names())
+    arg = p[3] if len(p) in [8, 11] else []
+    body = p[len(p)-2] if len(p) in [10, 11] else []
+    p[0] = nodes.Transition(left=p[1], arg=arg, right=p[6], body=body, level=0, globals=global_names())
+    if len(p) >= 10:
         pop_scope()
 
 def p_new_machine_function_scope(p):
