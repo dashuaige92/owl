@@ -33,7 +33,7 @@ machine nim = {
             return
         }
         stacks[s] -= chips
-        if (gameOver)() {
+        if (gameOver()) {
             print("You win!")
             running = false
         }

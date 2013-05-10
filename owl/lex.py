@@ -81,11 +81,6 @@ t_RBRACK  = r'\]'
 t_LBRACE  = r'\{'
 t_RBRACE  = r'\}'
 t_COMMA   = r','
-#t_NEWLINE = r'\n'
-def t_NEWLINE(t):
-    r'\n'
-    t.lexer.lineno += 1
-    return t
 
 t_EQUAL   = r'='
 t_PEQUAL  = r'\+='
@@ -114,6 +109,11 @@ def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     # Check for reserved keywords
     t.type = reserved.get(t.value, 'NAME')
+    return t
+
+def t_NEWLINE(t):
+    r'\n'
+    t.lexer.lineno += 1
     return t
 
 def t_error(t):

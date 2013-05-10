@@ -252,6 +252,7 @@ def p_statement_list_item(p):
                            | iteration
                            | selection_statement
                            | hoot
+                           | return_stmt
     """
     if p[1] == "\n":
         p[0] = None
@@ -621,7 +622,7 @@ def p_new_scope(p):
     p[0] = p[-1]
 
 def p_error(p):
-    warnings.warn("Syntax error on line %d!" % p.lineno, ParseError)
+    warnings.warn("Syntax error on line %d at token %s!" % (p.lineno, str(p)), ParseError)
 
 parser = yacc.yacc()
 
