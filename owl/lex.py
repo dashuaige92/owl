@@ -103,7 +103,7 @@ t_DOT     = r'\.'
 
 t_ARROW     = r'->'
 
-t_ignore  = ' \t'
+t_ignore  = ' \t\r'
 t_ignore_COMMENT = '\#.*'
 
 def t_NAME(t):
