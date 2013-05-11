@@ -349,6 +349,7 @@ def p_params_def(p):
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
+                     | GROUPS LPAREN expression RPAREN
                      | TOINT LPAREN expression RPAREN
                      | TOBOOL LPAREN expression RPAREN
                      | TOFLOAT LPAREN expression RPAREN
@@ -359,6 +360,8 @@ def p_function_call(p):
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True, param_types=[str])
+    elif p[1] == 'groups':
+        p[0] = nodes.Group(index=p[3], type=str)
     elif p[1] == 'toInt':
         p[0] = ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
     elif p[1] == 'toBool':
