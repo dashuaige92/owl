@@ -3,6 +3,7 @@ string s
 string append(string digit) {
     s += digit
     print(s)
+    return s
 }
 
 machine m = {
