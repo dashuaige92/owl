@@ -48,8 +48,7 @@ class Automaton(object):
         self.current_input = '' 
         for t in transitions:
             if t.start_state not in self.states \
-                    or t.end_state not in self.states \
-                    or not callable(t.condition):
+               or t.end_state not in self.states:
                         raise RuntimeError('Invalid transition', t)
             self.states[t.start_state].append(t)
 
