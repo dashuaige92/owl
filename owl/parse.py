@@ -629,17 +629,11 @@ def p_transition(p):
                   | NAME LPAREN RPAREN ARROW NAME NEWLINE
                   | NAME LPAREN RPAREN ARROW NAME new_machine_default_transition_scope LBRACE func_statement_list RBRACE
     """
-<<<<<<< HEAD
     left = p[1]
     right = p[6] if len(p) in [8, 11] else p[5]
     arg = p[3] if len(p) in [8, 11] else []
     body = p[len(p)-2] if len(p) in [10, 11] else []
     p[0] = nodes.Transition(left=left, arg=arg, right=right, body=body, level=0, globals=global_names())
-=======
-    arg = p[3] if len(p) in [8, 11] else []
-    body = p[len(p)-2] if len(p) in [10, 11] else []
-    p[0] = nodes.Transition(left=p[1], arg=arg, right=p[6], body=body, level=0, globals=global_names())
->>>>>>> regex
     if len(p) >= 10:
         pop_scope()
 
