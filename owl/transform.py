@@ -179,6 +179,7 @@ class TypeChecker(ast.NodeTransformer):
     concat_types = [str, list]
     str_comp = [ast.Eq, ast.NotEq]
     list_types = [int, float, str, bool]
+    type_casts = ['int', 'float', 'str', 'bool']
 
     def visit_Subscript(self, node):
         self.generic_visit(node)
@@ -190,10 +191,16 @@ class TypeChecker(ast.NodeTransformer):
         if hasattr(node.value, 'type') and node.value.type is not int:
             warnings.warn("List index must be an integer!", TransformError)
         return node
+# assign(targets=[
+#     subscript(value=Name(id=l)),
+#     slice=Index(value=Num)])
+#     ], value=Num(n=0)
 
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
+        if isinstance(node.targets[0], ast.Subscript):
+            node.type = node.targets[0].type[1]
         if node.type != node.value.type:
             if node.type == float and node.value.type == int or \
             node.type == (list, float) and node.value.type == (list, int):
@@ -213,10 +220,10 @@ class TypeChecker(ast.NodeTransformer):
         for stmt in node.body:
             if isinstance(stmt, ast.Return):
                 has_return = True
-                if stmt.value.type != node.type:
+                if stmt.type != node.type:
                     warnings.warn("""Function %s must return value of type %s: 
                         have type %s""" % (str(node.name), str(node.type), 
-                        str(stmt.value.type)), TransformError)
+                        str(stmt.type)), TransformError)
             elif hasattr(stmt, 'return_type'):
                 for ret_type in stmt.return_type:
                     if ret_type != node.type:
@@ -230,6 +237,10 @@ class TypeChecker(ast.NodeTransformer):
 
     def visit_Return(self, node):
         self.generic_visit(node)
+        if node.value != None:
+            node.type = node.value.type
+        else:
+            node.type = None
         return node
 
     def visit_If(self, node):
@@ -240,7 +251,7 @@ class TypeChecker(ast.NodeTransformer):
             body += node.orelse
         for stmt in body:
             if isinstance(stmt, ast.Return):
-                node.return_type.add(stmt.value.type)
+                node.return_type.add(stmt.type)
             elif hasattr(stmt, 'return_type'):
                 node.return_type.update(stmt.return_type)
         return node
@@ -250,7 +261,7 @@ class TypeChecker(ast.NodeTransformer):
         node.return_type = set()
         for stmt in node.body:
             if isinstance(stmt, ast.Return):
-                node.return_type.add(stmt.value.type)
+                node.return_type.add(stmt.type)
             elif hasattr(stmt, 'return_type'):
                 node.return_type.update(stmt.return_type)
         return node
@@ -262,14 +273,14 @@ class TypeChecker(ast.NodeTransformer):
             warnings.warn("""For loop requires matching types""", TransformError)
         for stmt in node.body:
             if isinstance(stmt, ast.Return):
-                node.return_type.add(stmt.value.type)
+                node.return_type.add(stmt.type)
             elif hasattr(stmt, 'return_type'):
                 node.return_type.update(stmt.return_type)
         return node
 
     def visit_Call(self, node):
         self.generic_visit(node)
-        if hasattr(node, 'type'):
+        if hasattr(node.func, 'id') and node.func.id in self.type_casts:
             if node.args[0].type not in self.list_types:
                 warnings.warn("""Typecast requires value of type int, float, bool or string:
                     have type %s""" % (str(node.args[0].type)), TransformError)
@@ -290,15 +301,15 @@ class TypeChecker(ast.NodeTransformer):
             if param_len != arg_len:
                 warnings.warn("""Function %s requires %d arguments: %d are given
                     """ % (node.func.id, param_len, arg_len), TransformError)
+
             params = node.param_types
             args = node.args
-            # params declared in function def, args passed in function call
-            
+            # params declared in function def, args passed in function call   
             for i, param, arg in izip(count(), params, args):
                  if arg.type != param:
                      node.type = None
                      warnings.warn("""Function %s requires type %s for argument %d:
-                        type %s is given""" % (node.func.id, params[i], (i+1), args[i]), \
+                        type %s is given""" % (node.func.id, str(params[i]), (i+1), str(args[i])), \
                         TransformError)
             # Set type if returning
         if hasattr(node, 'return_type'):
@@ -312,10 +323,12 @@ class TypeChecker(ast.NodeTransformer):
             warnings.warn("""Indexing value must be of type int: have 
                 type %s""" % (str(index_type)), TransformError)
         return node
+
     def visit_Attribute(self, node):
         # FIX #########
         node.type = 'node'
         return node
+
  # ast.Call(func=p[1], \
                 # args=p[3], keywords=[], starargs=None, kwargs=None)
 

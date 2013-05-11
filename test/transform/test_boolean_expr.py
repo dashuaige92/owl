@@ -46,6 +46,15 @@ class TestBooleanExpr(TransformTestCase):
 			True or s
 			""")
 		self.assertTransformError(owl)
+	def test_bool_void_invalid(self):
+		owl = textwrap.dedent(r"""
+			void func() {
+				return
+			}
+			string s = "true"
+			func or s
+			""")
+		self.assertTransformError(owl)
 
 
 

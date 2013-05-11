@@ -14,18 +14,20 @@ class TestAssign(TransformTestCase):
 				s = 'hi'
 				""")
 		self.assertTransformedAST(owl, python)
+
 	def test_list_assign_valid(self):
 		owl = textwrap.dedent(r"""
 				int[] l
 				l = [1, 2, 3]
 				""")
 		self.assertNoTransformError(owl)
-	# def test_list_assign2_valid(self):
-	# 	owl = textwrap.dedent(r"""
-	# 			int[] l = [1, 2, 3]
-	# 			l[0] = 5
-	# 			""")
-	# 	self.assertNoTransformError(owl)
+
+	def test_list_assign2_valid(self):
+		owl = textwrap.dedent(r"""
+				int[] l = [1, 2, 3]
+				l[0] = 5
+				""")
+		self.assertNoTransformError(owl)
 
 	# Invalid Tests
 	def test_str_assign_invalid(self):

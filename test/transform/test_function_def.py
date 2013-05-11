@@ -88,7 +88,6 @@ class TestFunctionDef(TransformTestCase):
 					}
 					return 8
 				}
-
 			}""")
 		self.assertTransformError(owl)
 	def test_function_def_nested_while_invalid(self):

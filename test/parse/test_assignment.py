@@ -15,6 +15,16 @@ class TestAssignment(ParserTestCase):
 			x = 0
 			""")
 		self.assertAST(owl, python)
+	def test_assign_list_equal(self):
+		owl = textwrap.dedent(
+			r"""
+			l[0] = 0
+			""")
+		python = textwrap.dedent(
+			r"""
+			l[0] = 0
+			""")
+		self.assertAST(owl, python)
 	def test_assign_plus_equal(self):
 		owl = textwrap.dedent(
 			r"""
