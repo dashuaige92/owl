@@ -151,8 +151,12 @@ def p_expression(p):
                   | variable_load
                   | list
                   | input
+                  | LPAREN expression RPAREN
     """
-    p[0] = p[1]
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
 
 def p_input(p):
     """input : INPUT LPAREN string RPAREN

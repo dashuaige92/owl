@@ -443,7 +443,8 @@ class ScopeResolver(ast.NodeTransformer):
         self.generic_visit(node)
         if hasattr(node, 'level'):
             node.name = '_'*(node.level + 1) + node.name
-        node.body.insert(0, ast.Global(names=['_'*(level+1) + name for level, name in node.globals]))
+        if len(node.globals) > 0:
+            node.body.insert(0, ast.Global(names=['_'*(level+1) + name for level, name in node.globals]))
         return node
 
     def visit_Assign(self, node):

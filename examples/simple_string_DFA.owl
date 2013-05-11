@@ -1,0 +1,12 @@
+int x
+
+machine m = {
+	node s1
+	node s2
+
+	s1("a") -> s2 {
+
+	}
+}
+
+m.step("a")
