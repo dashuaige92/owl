@@ -6,10 +6,10 @@ class TestSelectionStatements(LexerTestCase):
 
     def test_if_statement(self):
         self.assertTokenTypes(
-            'if(true) {\n}',
+            'if(True) {\n}',
             ('if', 'IF'),
             ('(', 'LPAREN'),
-            ('true', 'TRUE'),
+            ('True', 'TRUE'),
             (')', 'RPAREN'),
             ('{', 'LBRACE'),
             ('\n', 'NEWLINE'),
@@ -18,10 +18,10 @@ class TestSelectionStatements(LexerTestCase):
 
     def test_if_else_statement(self):
         self.assertTokenTypes(
-            'if(true) {\n} else {\n}',
+            'if(True) {\n} else {\n}',
             ('if', 'IF'),
             ('(', 'LPAREN'),
-            ('true', 'TRUE'),
+            ('True', 'TRUE'),
             (')', 'RPAREN'),
             ('{', 'LBRACE'),
             ('\n', 'NEWLINE'),

@@ -11,7 +11,7 @@ class TestList(TransformTestCase):
 		self.assertNoTransformError(owl)
 	def test_list_bool_valid(self):
 		owl = textwrap.dedent(r"""
-			bool[] b = [true, false, true]
+			bool[] b = [True, False, True]
 			""")
 		self.assertNoTransformError(owl)
 
@@ -23,12 +23,12 @@ class TestList(TransformTestCase):
 		self.assertTransformError(owl)
 	def test_list_str_invalid(self):
 		owl = textwrap.dedent(r"""
-			string[] s = ["1", "2", true]
+			string[] s = ["1", "2", True]
 			""")
 		self.assertTransformError(owl)
 	def test_list_bool_invalid(self):
 		owl = textwrap.dedent(r"""
-			bool[] b = [true, false, 1]
+			bool[] b = [True, False, 1]
 			""")
 		self.assertTransformError(owl)
 	def test_list_list_invalid(self):

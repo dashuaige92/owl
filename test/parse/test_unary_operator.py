@@ -16,10 +16,10 @@ class TestUnaryOp(ParserTestCase):
 			""")
 		self.assertAST(owl, python)
 
-	def test_unary_minus(self):
+	def test_unary_negation(self):
 		owl = textwrap.dedent(
 			r"""
-			not true
+			not True
 			""")
 		python = textwrap.dedent(
 			r"""

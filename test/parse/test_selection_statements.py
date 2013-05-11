@@ -8,7 +8,7 @@ class TestSelectionStatements(ParserTestCase):
     def test_if_statements(self):
         owl = textwrap.dedent(
             r"""
-            if(true) { 
+            if(True) { 
                 print("it was true")
             }
             """)
@@ -22,7 +22,7 @@ class TestSelectionStatements(ParserTestCase):
     def test_if_else_statements(self):
         owl = textwrap.dedent(
             r"""
-            if(true) {
+            if(True) {
                 print("it was true") 
             } else {
                 print("it was false")

@@ -1,6 +1,6 @@
 # DFA from HW1, problem 2
 
-bool accept = false
+bool accept = False
 
 machine m = {
 	node s0
@@ -25,11 +25,11 @@ machine m = {
 	s3("c") -> s2
 
 	enter(s4) {
-		accept = true
+		accept = True
 	}
 
 	exit(s4) {
-		accept = false
+		accept = False
 	}
 
 	s4() -> dead

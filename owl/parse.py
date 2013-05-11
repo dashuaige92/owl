@@ -527,7 +527,7 @@ def p_bool(p):
     """bool : TRUE
             | FALSE
     """
-    if p[1] == "true":
+    if p[1] == "True":
         p[0] = ast.Name("True", ast.Load(), type=bool)
     else:
         p[0] = ast.Name("False", ast.Load(), type=bool)

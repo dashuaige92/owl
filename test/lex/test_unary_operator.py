@@ -12,7 +12,7 @@ class TestUnaryOp(LexerTestCase):
 		)
 	def test_unary_not(self):
 		self.assertTokenTypes(
-			'not true',
+			'not True',
 			('not', 'NOT'),
-			('true', 'TRUE'),
+			('True', 'TRUE'),
 		)
