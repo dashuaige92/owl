@@ -103,14 +103,19 @@ class MachineCodeGenerator(ast.NodeTransformer):
     def visit_Transition(self, node):
 
         if type(node.arg) == list:
-            arg_name = "default_transition"
+            arg_name = ''
             default = True
         else:
-            arg_name = hashlib.md5(node.arg.s).hexdigest()
+            arg_name = '_' + hashlib.md5(node.arg.s).hexdigest()
             default = False
+        transition_name = '_%s_%s%s' % (node.left, node.right, arg_name)
+        function_name = 'trans_%s_%s%s' % (node.left, node.right, arg_name)
+
         fun = ast.FunctionDef(
-            name='trans_%s_%s_%s' % (node.left, node.right, arg_name),
-            args=ast.arguments([], None, None, []),
+            name=function_name,
+            args=ast.arguments([
+                ast.Name(id='groups', ctx=ast.Param()),
+            ], None, None, []),
             body=node.body if len(node.body) > 0 else [ast.Pass()],
             decorator_list=[],
             #level=node.level,
@@ -121,7 +126,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         if default:
             val = ast.copy_location(ast.Assign(
                     targets=[ast.Name(
-                        id='_%s_%s_%s' % (node.left, node.right, arg_name),
+                        id=transition_name,
                         ctx=ast.Store(),
                     )],
                     value=ast.Call(
@@ -138,7 +143,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         else:
             val = ast.copy_location(ast.Assign(
                 targets=[ast.Name(
-                    id='_%s_%s_%s' % (node.left, node.right, arg_name),
+                    id=transition_name,
                     ctx=ast.Store(),
                 )],
                 value=ast.Call(
@@ -161,7 +166,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                 ), node)
 
 
-        ass = ast.AugAssign(ast.Attribute(ast.Name('_%s_%s_%s' % (node.left, node.right, arg_name), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.Load()))
+        ass = ast.AugAssign(ast.Attribute(ast.Name(transition_name, ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name(function_name, ast.Load()))
 
 
         transitions.append(val)
@@ -337,8 +342,32 @@ class ScopeResolver(ast.NodeTransformer):
             node.id = '_'*(node.level + 1) + node.id
         return node
 
+class PostProcessor(ast.NodeTransformer):
+    """Convert miscellania that are not affected by the main Transformers.
+    """
+
+    def visit_Group(self, node):
+        self.generic_visit(node)
+        return ast.copy_location(
+            ast.IfExp(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id='len', ctx=ast.Load()),
+                        args=[ast.Name(id='groups', ctx=ast.Load())],
+                        keywords=[], starargs=None, kwargs=None),
+                    ops=[ast.Gt()],
+                    comparators=[node.index]),
+                body=ast.Subscript(
+                    value=ast.Name(id='groups', ctx=ast.Load()),
+                    slice=ast.Index(value=node.index),
+                    ctx=ast.Load()),
+                orelse=ast.Str(s=''),
+                type=str
+            )
+        , node)
+
 def transform(tree, filters=[]):
-    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver]:
+    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver, PostProcessor]:
         if Transformer not in filters:
             tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)

@@ -1,5 +1,14 @@
 import ast
 
+class Group(ast.expr):
+    """AST Node representing the groups() standard Owl function."""
+    _fields = ('index',)
+
+    def __init__(self, index, **kwargs):
+        self.index = index
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
+
 class Node(ast.stmt):
     _fields = ('name',)
 

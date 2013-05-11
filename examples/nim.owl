@@ -26,8 +26,8 @@ machine nim = {
 
     # Need regex support
     move("(\d+),\s+(\d+)") -> move {
-        int chips = toInt(1)
-        int s = toInt(2)
+        int chips = toInt(groups(0))
+        int s = toInt(groups(1))
 
         if (stacks[s] < chips) {
             return

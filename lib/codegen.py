@@ -231,7 +231,7 @@ class SourceGenerator(NodeVisitor):
         self.visit(node.test)
         self.write(':')
         self.body(node.body)
-        while True:
+        while len(node.orelse) > 0:
             else_ = node.orelse
             if len(else_) == 1 and isinstance(else_[0], If):
                 node = else_[0]
@@ -527,11 +527,13 @@ class SourceGenerator(NodeVisitor):
         self.write('}')
 
     def visit_IfExp(self, node):
+        self.write('(')
         self.visit(node.body)
         self.write(' if ')
         self.visit(node.test)
         self.write(' else ')
         self.visit(node.orelse)
+        self.write(')')
 
     def visit_Starred(self, node):
         self.write('*')

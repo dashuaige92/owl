@@ -1,9 +1,16 @@
 import unittest
 import textwrap
+import hashlib
 
 from test.parse_helper import TransformTestCase
 
 class TestMachine(TransformTestCase):
+
+    def transition_name(self, left, right, arg=None):
+        if arg is None:
+            return '_%s_%s' % (left, right)
+        trans = hashlib.md5(arg).hexdigest() if len(arg) > 0 else ''
+        return '_%s_%s_%s' % (left, right, trans)
 
     def test_machine_without_nodes_raises_error(self):
         owl = textwrap.dedent(
@@ -49,15 +56,17 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
 
-            def trans_a_b_1():
+            def trans{ab_1}(groups):
                 pass
             
-            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b_1.on_enter += trans_a_b_1
+            {ab_1} = Transition(a, b, lambda _x: (_x == '1') )
+            {ab_1}.on_enter += trans{ab_1}
 
-            m3 = Automaton([a,b],[_a_b_1],a)
+            m3 = Automaton([a,b],[{ab_1}],a)
 
-            """)
+            """.format(
+                ab_1 = self.transition_name('a', 'b', '1'),
+            ))
 
         self.assertTransformedAST(owl, python)
 
@@ -76,15 +85,17 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
             
-            def trans_a_b_1():
+            def trans{ab_1}(groups):
                 print("hello")
 
-            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b_1.on_enter += trans_a_b_1
+            {ab_1} = Transition(a, b, lambda _x: (_x == '1') )
+            {ab_1}.on_enter += trans{ab_1}
             
-            m4 = Automaton([a,b],[_a_b_1],a)
+            m4 = Automaton([a,b],[{ab_1}],a)
 
-            """)
+            """).format(
+                ab_1 = self.transition_name('a', 'b', '1'),
+            )
 
         self.assertTransformedAST(owl, python)
 
@@ -92,32 +103,21 @@ class TestMachine(TransformTestCase):
         owl = textwrap.dedent(r"""
             machine m5 = {
                 node a
-                node b
                 enter(a) {
                     print("world")
-                }
-                a("1") -> b {
-                    print("hello")
                 }
             }
             """)
 
         python = textwrap.dedent(r"""
             a = State()
-            b = State()
 
             def func_a():
                 print("world")
             
             a.on_enter += func_a
 
-            def trans_a_b_1():
-                print("hello")
-
-            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b_1.on_enter += trans_a_b_1
-
-            m5 = Automaton([a,b],[_a_b_1],a)
+            m5 = Automaton([a],[],a)
 
             """)
 
@@ -126,44 +126,26 @@ class TestMachine(TransformTestCase):
     def test_machine_func_default_trans(self):
         owl = textwrap.dedent(r"""
             machine m5 = {
-            node a
-            node b
-            enter(a) {
-            print("world")
-            }
-            a("1") -> b {
-            print("hello")
-            }
-            a() -> a {
-                print("invalid input")
-            }
+                node a
+                a() -> a {
+                    print("invalid input")
+                }
             }
             """)
 
         python = textwrap.dedent(r"""
             a = State()
-            b = State()
-
-            def func_a():
-                print("world")
-
-            a.on_enter += func_a
-
-            def trans_a_b_1():
-                print("hello")
-
-            _a_b_1 = Transition(a, b, lambda _x: (_x == '1') )
-            _a_b_1.on_enter += trans_a_b_1
-            
-            def trans_a_a_default_transition():
+            def trans{aa_default}(groups):
                 print("invalid input")
 
-            _a_a_default_transition = Transition(a, a )
-            _a_a_default_transition.on_enter += trans_a_a_default_transition
+            {aa_default} = Transition(a, a )
+            {aa_default}.on_enter += trans{aa_default}
 
-            m5 = Automaton([a,b],[_a_b_1,_a_a_default_transition],a)
+            m5 = Automaton([a], [{aa_default}], a)
 
-            """)
+            """.format(
+                aa_default = self.transition_name('a', 'a'),
+            ))
 
         self.assertTransformedAST(owl, python)
 
