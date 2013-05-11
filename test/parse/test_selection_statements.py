@@ -36,3 +36,22 @@ class TestSelectionStatements(ParserTestCase):
                 print "it was false"
             """)
         self.assertAST(owl, python)
+
+    def test_if_else_statements2(self):
+        owl = textwrap.dedent(
+            r"""
+            if(x == 3) {
+                print("it's 3")
+            } else {
+                print("it's not 3")
+            }
+            """)
+        python = textwrap.dedent(
+            r"""
+            if x == 3:
+                print "it's 3"
+            else:
+                print "it's not 3"
+            """)
+        self.assertAST(owl, python)
+        

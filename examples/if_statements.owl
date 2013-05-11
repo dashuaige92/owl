@@ -1,0 +1,7 @@
+int x = 3
+
+if(x == 3) {
+	print("it's 3")
+} else {
+	print("it's not 3")
+}

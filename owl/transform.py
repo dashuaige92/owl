@@ -227,7 +227,7 @@ class TypeChecker(ast.NodeTransformer):
     def visit_If(self, node):
         self.generic_visit(node)
         node.return_type = set()
-        body = node.body
+        body = list(node.body)
         if hasattr(node, 'orelse'):
             body += node.orelse
         for stmt in body:

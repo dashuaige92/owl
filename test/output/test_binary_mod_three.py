@@ -4,7 +4,6 @@ import textwrap
 from test.output_helper import OutputTestCase
 
 class TestBinaryModThreeDFA(OutputTestCase):
-
     def test_binary_mod_three(self):
         owl = 'examples/binary_mod_three.owl'
         output = textwrap.dedent(
