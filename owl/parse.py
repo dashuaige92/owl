@@ -57,8 +57,8 @@ def get_param_types(func_name):
     """Get a list of all param types for the given function."""
     for i in range(len(scope_stack) + 1):
         subtable = get_table(scope_stack if i is 0 else scope_stack[:-i])
-        if var_name in subtable and type(subtable[var_name]) is dict:
-            return subtable[var_name]['params']
+        if func_name in subtable and type(subtable[func_name]) is dict:
+            return subtable[func_name]['params']
     return None
 
 def get_type(var_name):

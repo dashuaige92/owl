@@ -103,13 +103,16 @@ class MachineCodeGenerator(ast.NodeTransformer):
     def visit_Transition(self, node):
 
         if type(node.arg) == list:
-            arg_name = "default_transition"
+            arg_name = ''
             default = True
         else:
-            arg_name = hashlib.md5(node.arg.s).hexdigest()
+            arg_name = '_' + hashlib.md5(node.arg.s).hexdigest()
             default = False
+        transition_name = '_%s_%s%s' % (node.left, node.right, arg_name)
+        function_name = 'trans_%s_%s%s' % (node.left, node.right, arg_name)
+
         fun = ast.FunctionDef(
-            name='trans_%s_%s_%s' % (node.left, node.right, arg_name),
+            name=function_name,
             args=ast.arguments([], None, None, []),
             body=node.body if len(node.body) > 0 else [ast.Pass()],
             decorator_list=[],
@@ -121,7 +124,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         if default:
             val = ast.copy_location(ast.Assign(
                     targets=[ast.Name(
-                        id='_%s_%s_%s' % (node.left, node.right, arg_name),
+                        id=transition_name,
                         ctx=ast.Store(),
                     )],
                     value=ast.Call(
@@ -138,7 +141,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
         else:
             val = ast.copy_location(ast.Assign(
                 targets=[ast.Name(
-                    id='_%s_%s_%s' % (node.left, node.right, arg_name),
+                    id=transition_name,
                     ctx=ast.Store(),
                 )],
                 value=ast.Call(
@@ -161,7 +164,7 @@ class MachineCodeGenerator(ast.NodeTransformer):
                 ), node)
 
 
-        ass = ast.AugAssign(ast.Attribute(ast.Name('_%s_%s_%s' % (node.left, node.right, arg_name), ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name('trans_%s_%s_%s' % (node.left, node.right, arg_name), ast.Load()))
+        ass = ast.AugAssign(ast.Attribute(ast.Name(transition_name, ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name(function_name, ast.Load()))
 
 
         transitions.append(val)
