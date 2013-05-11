@@ -27,6 +27,13 @@ class TestFunctionDef(TransformTestCase):
 				return 0
 			}""")
 		self.assertNoTransformError(owl)
+	def test_function_def_simple_void_valid(self):
+		owl = textwrap.dedent(r"""
+			void func() {
+				return
+			}
+			""")
+		self.assertNoTransformError(owl)
 	
 	def test_function_def_nested_if_valid(self):
 		owl = textwrap.dedent(r"""

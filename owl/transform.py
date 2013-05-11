@@ -221,12 +221,13 @@ class TypeChecker(ast.NodeTransformer):
                         have type %s""" % (str(node.name), str(node.type), 
                         str(stmt.type)), TransformError)
             elif hasattr(stmt, 'return_type'):
+                has_return = True
                 for ret_type in stmt.return_type:
                     if ret_type != node.type:
                         warnings.warn("""Function %s must return value of type %s: 
                         have type %s""" % (str(node.name), str(node.type), 
                         str(ret_type)), TransformError)
-        if has_return == False:
+        if has_return == False and node.type != None:
             warnings.warn("""Function %s must return value of type %s""" % (str(node.name),\
             str(node.type)), TransformError)
         return node
