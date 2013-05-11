@@ -172,6 +172,8 @@ class TypeChecker(ast.NodeTransformer):
     concat_types = [str, list]
     str_comp = [ast.Eq, ast.NotEq]
     list_types = [int, float, str, bool]
+    float_list = [float, (list, float)]
+    int_list = [int, (list, int)]
 
     def visit_Subscript(self, node):
         self.generic_visit(node)
@@ -187,16 +189,116 @@ class TypeChecker(ast.NodeTransformer):
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
-
         if node.type != node.value.type:
-            warnings.warn("""Cannot assign type %s
-                to variable of type %s""" % (str(node.value.type),
-                    str(node.type)), TransformError)
+            if node.type in self.float_list and node.value.type in self.int_list:
+                return node
+
+            warnings.warn("""Cannot assign type %s to variable of type %s""" \
+                        % (str(node.value.type), str(node.type)), TransformError)
         return node
 
     def visit_Expr(self, node):
         self.generic_visit(node)
         return node
+
+    def visit_FunctionDef(self, node):
+        self.generic_visit(node)
+        for stmt in node.body:
+            if isinstance(stmt, ast.Return):
+                if stmt.value.type != node.type:
+                    warnings.warn("""Function %s must return value of type %s: 
+                            have type %s""" % (str(node.name), str(node.type), 
+                                             str(stmt.value.type)), TransformError)
+            elif hasattr(stmt, 'return_type'):
+                for ret_type in stmt.return_type:
+                    if ret_type != node.type:
+                        warnings.warn("""Function %s must return value of type %s: 
+                            have type %s""" % (str(node.name), str(node.type), 
+                                             str(ret_type)), TransformError)
+        return node
+    def visit_Return(self, node):
+        self.generic_visit(node)
+        return node
+
+    def visit_If(self, node):
+        self.generic_visit(node)
+        node.return_type = set()
+        body = node.body
+        if hasattr(node, 'orelse'):
+            body += node.orelse
+        for stmt in body:
+            if isinstance(stmt, ast.Return):
+                node.return_type.add(stmt.value.type)
+            elif hasattr(stmt, 'return_type'):
+                node.return_type.update(stmt.return_type)
+        return node
+
+    def visit_While(self, node):
+        self.generic_visit(node)
+        node.return_type = set()
+        for stmt in node.body:
+            if isinstance(stmt, ast.Return):
+                node.return_type.add(stmt.value.type)
+            elif hasattr(stmt, 'return_type'):
+                node.return_type.update(stmt.return_type)
+        return node
+
+    def visit_For(self, node):
+        self.generic_visit(node)
+        node.return_type = set()
+        if node.target.type != int:
+            warnings.warn("""For loop requires value of type int: have value of
+                type %s""" % (int, str(node.target.type)), TransformError)
+        if node.iter.type != (list, int):
+            warnings.warn("""For loop requires a list of values of type int: have
+                type %s""" % (str(node.iter.type)), TransformError)
+        for stmt in node.body:
+            if isinstance(stmt, ast.Return):
+                node.return_type.add(stmt.value.type)
+            elif hasattr(stmt, 'return_type'):
+                node.return_type.update(stmt.return_type)
+        return node
+
+#symbol table: get_table, all_names, global_names, local_names, get_type
+# check return type
+# ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, 
+#    kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], 
+#       level=0, globals=global_names())
+
+
+ # typecasting: only 1 argument
+ # ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
+
+ # func(params)
+ # ast.Call(func=p[1], \
+                # args=p[3], keywords=[], starargs=None, kwargs=None)
+
+# obj.val
+# ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
+# obj must be machine, must have field func? 
+
+# func.name(params)
+# ast.Call(func=ast.Attribute(value=p[1], \
+  #          attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
+
+# list[int]
+# ast.Subscript(
+#                 value=p[1],
+#                 slice=ast.Index(value=p[3]),
+#                 ctx=ast.Load(),
+#                 )
+
+# test int[] list 1 \n list1(x, y)
+    # def visit_Call(self, node):
+    #     self.generic_visit(node)
+        
+
+    #     for arg in node.args:
+    #         if arg.type != node.type:
+    #             node.type = None
+    #             # warnings.warn(""")
+
+    #     return node
 
     def visit_BinOp(self, node):
         self.generic_visit(node)
@@ -280,6 +382,7 @@ class TypeChecker(ast.NodeTransformer):
         if node.id == 'True' or node.id == 'False':
             node.type = bool
         # Other ast.Name nodes
+        # Must load from symbol table?
         return node
 
     def visit_Num(self, node):
@@ -306,9 +409,14 @@ class TypeChecker(ast.NodeTransformer):
             list_type = tmp[0].type
             for i in tmp:
                 if i.type != list_type:
-                    warnings.warn("""List entries must be of type %s""" % list_type, 
+                    if i.type in self.arith_types and \
+                    list_type in self.arith_types:
+                        list_type = float
+                    else:
+                        warnings.warn("""List entries must be of type %s""" % list_type, 
                                                                 TransformError)
-                    break
+                        list_type = None
+                        break
             node.type = (list, list_type)
         return node
 
