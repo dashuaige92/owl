@@ -23,7 +23,8 @@ symbol_table = {
     # Example entries
     # 'myvar' : int
     # 'myfunc' : {
-    #   'type' : list
+    #   'type' : (list, int)
+    #   'params' : [int, (list, int)]
     #   'symbols' : sub_symbol_table
     # }
 }
@@ -52,6 +53,14 @@ def local_names():
     """Get all names in the local scope."""
     return get_table(scope_stack).keys()
 
+def get_param_types(func_name):
+    """Get a list of all param types for the given function."""
+    for i in range(len(scope_stack) + 1):
+        subtable = get_table(scope_stack if i is 0 else scope_stack[:-i])
+        if var_name in subtable and type(subtable[var_name]) is dict:
+            return subtable[var_name]['params']
+    return None
+
 def get_type(var_name):
     """Get an identifier's scope level and type."""
     for i in range(len(scope_stack) + 1):
@@ -60,13 +69,10 @@ def get_type(var_name):
             return (len(scope_stack) - i, subtable[var_name]['type'] if type(subtable[var_name]) is dict else subtable[var_name])
     return (0, None)
 
-# def get_return_type(var_name):
-#     """Get an identifier's scope level and type."""
-#     for i in range(len(scope_stack) + 1):
-#         subtable = get_table(scope_stack if i is 0 else scope_stack[:-i])
-#         if var_name in subtable:
-#             return (len(scope_stack) - i, subtable[var_name]['return_type'] if type(subtable[var_name]) is dict else subtable[var_name])
-#     return (0, None)
+def add_param(var_type):
+    if len(scope_stack) == 0:
+        warnings.warn("Adding parameters to global scope!", ParseError)
+    get_table(scope_stack[:-1])[scope_stack[-1]]['params'] += [var_type]
 
 def add_symbol(var_name, var_type):
     """Add an identifier in the local scope."""
@@ -83,6 +89,7 @@ def push_scope(scope_name, scope_type=None):
     #symbol_stack[-1].append(scope_name)
     get_table(scope_stack)[scope_name] = {
         'type': scope_type, # Return type for function scopes, etc.
+        'params': [],
         'symbols': {}
     }
     scope_stack.append(scope_name)
@@ -336,6 +343,7 @@ def p_params_def(p):
     """
     if len(p) != 1:
         add_symbol(p[2], p[1])
+        add_param(p[1])
         p[0] = ast.Name(id=p[2], ctx=ast.Param(), type=p[1], level=len(scope_stack))
 
 def p_function_call(p):
@@ -350,7 +358,7 @@ def p_function_call(p):
                      | variable_load LBRACK expression RBRACK
     """
     if p[1] == 'print':
-        p[0] = ast.Print(None, [p[3]], True)
+        p[0] = ast.Print(None, [p[3]], True, param_types=[str])
     elif p[1] == 'toInt':
         p[0] = ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
     elif p[1] == 'toBool':
@@ -359,21 +367,29 @@ def p_function_call(p):
         p[0] = ast.Call(func=ast.Name(id='float', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=float)
     elif p[1] == 'toString':
         p[0] = ast.Call(func=ast.Name(id='str', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=str)
+
+    # variable_load DOT NAME
     elif len(p) == 4:
         p[0] = ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
+
+    # variable_load DOT NAME LPAREN parameters RPAREN
+    # [TODO] Add expected param_types
     elif len(p) == 7:
         p[0] = ast.Call(func=ast.Attribute(value=p[1], \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
+        # variable_load LPAREN expression RPAREN
+        # [TODO] Typecheck expression for int
         if p[2] == '[':
             p[0] = ast.Subscript(
                 value=p[1],
                 slice=ast.Index(value=p[3]),
                 ctx=ast.Load(),
                 )
+        # variable_load LBRACK expression RBRACK
         elif p[2] == '(':
             p[0] = ast.Call(func=p[1], \
-                args=p[3], keywords=[], starargs=None, kwargs=None)
+                args=p[3], keywords=[], starargs=None, kwargs=None, param_types=get_param_types(p[1].id))
 
 def p_parameters(p):
     """parameters    : expression
