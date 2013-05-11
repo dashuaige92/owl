@@ -195,8 +195,9 @@ class TypeChecker(ast.NodeTransformer):
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
-        #if isinstance(node.targets[0], ast.Subscript):
-            #node.type = node.targets[0].type[1]
+
+        if isinstance(node.targets[0], ast.Subscript):
+            node.type = node.targets[0].type
         if node.type != node.value.type:
             if node.type == float and node.value.type == int or \
             node.type == (list, float) and node.value.type == (list, int):
