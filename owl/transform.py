@@ -114,7 +114,9 @@ class MachineCodeGenerator(ast.NodeTransformer):
 
         fun = ast.FunctionDef(
             name=function_name,
-            args=ast.arguments([], None, None, []),
+            args=ast.arguments([
+                ast.Name(id='groups', ctx=ast.Param()),
+            ], None, None, []),
             body=node.body if len(node.body) > 0 else [ast.Pass()],
             decorator_list=[],
             #level=node.level,
@@ -483,8 +485,32 @@ class ScopeResolver(ast.NodeTransformer):
             node.id = '_'*(node.level + 1) + node.id
         return node
 
+class PostProcessor(ast.NodeTransformer):
+    """Convert miscellania that are not affected by the main Transformers.
+    """
+
+    def visit_Group(self, node):
+        self.generic_visit(node)
+        return ast.copy_location(
+            ast.IfExp(
+                test=ast.Compare(
+                    left=ast.Call(
+                        func=ast.Name(id='len', ctx=ast.Load()),
+                        args=[ast.Name(id='groups', ctx=ast.Load())],
+                        keywords=[], starargs=None, kwargs=None),
+                    ops=[ast.Gt()],
+                    comparators=[node.index]),
+                body=ast.Subscript(
+                    value=ast.Name(id='groups', ctx=ast.Load()),
+                    slice=ast.Index(value=node.index),
+                    ctx=ast.Load()),
+                orelse=ast.Str(s=''),
+                type=str
+            )
+        , node)
+
 def transform(tree, filters=[]):
-    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver]:
+    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver, PostProcessor]:
         if Transformer not in filters:
             tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)

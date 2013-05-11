@@ -56,7 +56,7 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
 
-            def trans{ab_1}():
+            def trans{ab_1}(groups):
                 pass
             
             {ab_1} = Transition(a, b, lambda _x: (_x == '1') )
@@ -85,7 +85,7 @@ class TestMachine(TransformTestCase):
             a = State()
             b = State()
             
-            def trans{ab_1}():
+            def trans{ab_1}(groups):
                 print("hello")
 
             {ab_1} = Transition(a, b, lambda _x: (_x == '1') )
@@ -135,7 +135,7 @@ class TestMachine(TransformTestCase):
 
         python = textwrap.dedent(r"""
             a = State()
-            def trans{aa_default}():
+            def trans{aa_default}(groups):
                 print("invalid input")
 
             {aa_default} = Transition(a, a )

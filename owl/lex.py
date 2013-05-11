@@ -8,6 +8,7 @@ from errors import LexError
 # Reserved keywords
 reserved = {
     'print'   : 'PRINT',
+    'groups'   : 'GROUPS',
 
     'True'    : 'TRUE',
     'False'   : 'FALSE',
