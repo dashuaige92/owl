@@ -24,7 +24,7 @@ class TestFunctionDef(TransformTestCase):
 						return 3
 					}
 				}
-
+				return 0
 			}""")
 		self.assertNoTransformError(owl)
 	
@@ -43,8 +43,7 @@ class TestFunctionDef(TransformTestCase):
 		self.assertNoTransformError(owl)
 	def test_function_def_nested_while_valid(self):
 		owl = textwrap.dedent(r"""
-			int func() {
-				int x = 0
+			int func(int x, int y) {
 				if (x == 0) {
 					return 0
 				} else {
@@ -56,10 +55,6 @@ class TestFunctionDef(TransformTestCase):
 			}
 			""")
 		self.assertNoTransformError(owl)
-	
-	def test_function_def_params_valid(self):
-		pass
-
 
 
 	# Invalid 
@@ -124,6 +119,21 @@ class TestFunctionDef(TransformTestCase):
 						} else {
 							return x*5.5
 						}
+					}
+				}
+				return x
+			}
+			""")
+		self.assertTransformError(owl)
+
+	def test_function_def_params_invalid(self):
+		owl = textwrap.dedent(r"""
+			int func(int x, float y) {
+				if (x == 0) {
+					return 0
+				} else {
+					while (x) {
+						return y
 					}
 				}
 				return x

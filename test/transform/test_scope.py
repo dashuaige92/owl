@@ -30,6 +30,7 @@ class TestScope(TransformTestCase):
             int f(int z) {
                 int x
                 x = 1
+                return 1
             }
             """)
         python = textwrap.dedent(
@@ -39,6 +40,7 @@ class TestScope(TransformTestCase):
                 global _x
                 __x = 0
                 __x = 1
+                return 1
             """)
         self.assertTransformedAST(owl, python, transform_filters=[transform.StandardLibraryAdder])
 
@@ -49,6 +51,7 @@ class TestScope(TransformTestCase):
             int f(int z) {
                 int y
                 x = 1
+                return 1
             }
             """)
         python = textwrap.dedent(
@@ -58,6 +61,7 @@ class TestScope(TransformTestCase):
                 global _x
                 __y = 0
                 _x = 1
+                return 1
             """)
         self.assertTransformedAST(owl, python, transform_filters=[transform.StandardLibraryAdder])
 
@@ -68,6 +72,7 @@ class TestScope(TransformTestCase):
             int f(int z) {
                 x = 1
                 int x
+                return x
             }
             """)
         python = textwrap.dedent(
@@ -77,5 +82,6 @@ class TestScope(TransformTestCase):
                 global _x
                 _x = 1
                 __x = 0
+                return __x
             """)
         self.assertTransformedAST(owl, python, transform_filters=[transform.StandardLibraryAdder])

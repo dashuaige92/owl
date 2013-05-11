@@ -388,6 +388,7 @@ def p_function_call(p):
                 )
         # variable_load LBRACK expression RBRACK
         elif p[2] == '(':
+            ret = get_type(p[1].id)
             p[0] = ast.Call(func=p[1], \
                 args=p[3], keywords=[], starargs=None, kwargs=None, param_types=get_param_types(p[1].id))
 
