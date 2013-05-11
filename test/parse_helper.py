@@ -120,4 +120,7 @@ class TransformTestCase(ParserTestCase):
                     '\n'.join(str(e.message) for e in w)
                 )
             if any(issubclass(e.category, TransformError) for e in w):
-                raise AssertionError('Unexpected TransformError raised!')
+                raise AssertionError(
+                    'Unexpected TransformError in Owl source!\n' +
+                    '\n'.join(str(e.message) for e in w)
+                )

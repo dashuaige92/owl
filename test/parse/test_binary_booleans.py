@@ -15,6 +15,7 @@ class TestBinaryBooleans(ParserTestCase):
            a and b
            """)
         self.assertAST(owl, python)
+
     def test_or_op(self):
         owl = textwrap.dedent(
             r"""
@@ -23,5 +24,27 @@ class TestBinaryBooleans(ParserTestCase):
         python = textwrap.dedent(
         	r"""
         	a or b
+            """)
+        self.assertAST(owl, python)
+
+    def test_multiple_operators(self):
+        owl = textwrap.dedent(
+            r"""
+            a or (b and c)
+            """)
+        python = textwrap.dedent(
+        	r"""
+        	a or (b and c)
+            """)
+        self.assertAST(owl, python)
+
+    def test_multiple_operators_2(self):
+        owl = textwrap.dedent(
+            r"""
+            (a or b) and c
+            """)
+        python = textwrap.dedent(
+        	r"""
+        	(a or b) and c
             """)
         self.assertAST(owl, python)

@@ -250,12 +250,8 @@ class TypeChecker(ast.NodeTransformer):
     def visit_For(self, node):
         self.generic_visit(node)
         node.return_type = set()
-        if node.target.type != int:
-            warnings.warn("""For loop requires value of type int: have value of
-                type %s""" % (int, str(node.target.type)), TransformError)
-        if node.iter.type != (list, int):
-            warnings.warn("""For loop requires a list of values of type int: have
-                type %s""" % (str(node.iter.type)), TransformError)
+        if type(node.iter.type) is not tuple or node.target.type != node.iter.type[1]:
+            warnings.warn("""For loop requires matching types""", TransformError)
         for stmt in node.body:
             if isinstance(stmt, ast.Return):
                 node.return_type.add(stmt.value.type)

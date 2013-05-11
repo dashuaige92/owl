@@ -4,7 +4,6 @@ import textwrap
 from test.parse_helper import TransformTestCase
 
 class TestFor(TransformTestCase):
-
 	@unittest.skip("For list range")	
 	def test_for_list_range(self):
 		owl = textwrap.dedent(r"""
@@ -15,7 +14,7 @@ class TestFor(TransformTestCase):
 			""")
 		self.assertNoTransformError(owl)
 
-	def test_for_list_valid(self):
+	def test_for_int_in_int_list(self):
 		owl = textwrap.dedent(r"""
 			int i
 			int[] list = [1, 2, 3]
@@ -25,14 +24,23 @@ class TestFor(TransformTestCase):
 			""")
 		self.assertNoTransformError(owl)
 
+	def test_for_float_in_float_list(self):
+		owl = textwrap.dedent(r"""
+			float f
+			float[] list = [1, 2, 3, 4, 5.5]
+			for f in list {
+				print(f)
+			}
+			""")
+		self.assertNoTransformError(owl)
 
 	# Invalid
-	def test_for_list_type_invalid(self):
+	def test_for_int_in_float_list_invalid(self):
 		owl = textwrap.dedent(r"""
 			int i
 			float[] list = [1, 2, 3, 4, 5.5]
-			for i in list1 {
-				return 0
+			for i in list {
+				print(i)
 			}
 			""")
 		self.assertTransformError(owl)
