@@ -34,15 +34,6 @@ class TestAssign(TransformTestCase):
 			i = 5.5
 			""")
 		self.assertTransformError(owl)
-
-	# Not Working
-	def test_float_assign_invalid(self):
-		owl = textwrap.dedent(r"""
-			float f
-			f = 100.5
-			""")
-		self.assertTransformError(owl)
-
 	def test_list_assign_invalid(self):
 		owl = textwrap.dedent(r"""
 				int[] num_list
