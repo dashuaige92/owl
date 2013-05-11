@@ -1,12 +1,48 @@
-int x
+# DFA from HW1, problem 2
+
+bool accept = false
 
 machine m = {
+	node s0
 	node s1
 	node s2
+	node s3
+	node s4
+	node dead
 
-	s1("a") -> s2 {
+	s0("a") -> s1
+	s0() -> dead
 
+	s1("b") -> s2
+	s1() -> dead
+
+	s2("a") -> s2
+	s2("b") -> s3
+	s2("c") -> s2
+
+	s3("a") -> s4
+	s3("b") -> s3
+	s3("c") -> s2
+
+	enter(s4) {
+		accept = true
 	}
+
+	exit(s4) {
+		accept = false
+	}
+
+	s4() -> dead
+
+	dead() -> dead
 }
 
 m.step("a")
+m.step("b")
+m.step("a")
+m.step("c")
+m.step("b")
+m.step("b")
+m.step("a")
+
+print(accept)

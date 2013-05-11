@@ -11,6 +11,6 @@ class TestArithmeticParen(ParserTestCase):
             """)
         python = textwrap.dedent(
             r"""
-            x = 1 + 2 * 3
+            x = (1 + 2) * 3
             """)
         self.assertAST(owl, python)
