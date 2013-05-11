@@ -10,3 +10,14 @@ class TestLists(LexerTestCase):
             ('"Andrew"','LIT_STRING'),
             (']','RBRACK'),
         )
+
+    def test_range(self):
+        self.assertTokenTypes(
+            'range(3,5)',
+            ('range', 'RANGE'),
+            ('(', 'LPAREN'),
+            ('3', 'LIT_INT'),
+            (',', 'COMMA'),
+            ('5', 'LIT_INT'),
+            (')','RPAREN'),
+        )
