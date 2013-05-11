@@ -258,16 +258,35 @@ class TypeChecker(ast.NodeTransformer):
             elif hasattr(stmt, 'return_type'):
                 node.return_type.update(stmt.return_type)
         return node
+    def visit_Call(self, node):
+        self.generic_visit(node)
+        if hasattr(node, 'type'):
+            if node.args[0].type not in self.list_types:
+                node.type = None
+                warnings.warn("""Typecast requires value of type int, float, bool or string:
+                    have type %s""" % (str(node.args[0].type)), TransformError)
+        # else:
+
+            # for arg in node.args:
+            #     if arg.type != node.type:
+            #         node.type = None
+            #         warnings.warn(""")
+
+        return node
+    
+    def visit_Subscript(self, node):
+        self.generic_visit(node)
+        index_type = node.slice.value.type
+        if index_type != int:
+            warnings.warn("""Indexing value must be of type int: have 
+                type %s""" % (str(index_type)), TransformError)
+        return node
 
 #symbol table: get_table, all_names, global_names, local_names, get_type
 # check return type
 # ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, 
 #    kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], 
 #       level=0, globals=global_names())
-
-
- # typecasting: only 1 argument
- # ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
 
  # func(params)
  # ast.Call(func=p[1], \
@@ -288,17 +307,6 @@ class TypeChecker(ast.NodeTransformer):
 #                 ctx=ast.Load(),
 #                 )
 
-# test int[] list 1 \n list1(x, y)
-    # def visit_Call(self, node):
-    #     self.generic_visit(node)
-        
-
-    #     for arg in node.args:
-    #         if arg.type != node.type:
-    #             node.type = None
-    #             # warnings.warn(""")
-
-    #     return node
 
     def visit_BinOp(self, node):
         self.generic_visit(node)
