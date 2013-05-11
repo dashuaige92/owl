@@ -102,7 +102,7 @@ t_DOT     = r'\.'
 
 t_ARROW     = r'->'
 
-t_ignore  = ' \t'
+t_ignore  = ' \t\r'
 t_ignore_COMMENT = '\#.*'
 
 def t_NAME(t):
@@ -117,7 +117,7 @@ def t_NEWLINE(t):
     return t
 
 def t_error(t):
-    warnings.warn("Illegal character '%s'" % t.value[0], LexError)
+    warnings.warn("Illegal character '%s'" % str(ord(t.value[0])), LexError)
     t.lexer.skip(1)
 
 lexer = lex.lex()
