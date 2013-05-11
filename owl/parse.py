@@ -60,6 +60,14 @@ def get_type(var_name):
             return (len(scope_stack) - i, subtable[var_name]['type'] if type(subtable[var_name]) is dict else subtable[var_name])
     return (0, None)
 
+# def get_return_type(var_name):
+#     """Get an identifier's scope level and type."""
+#     for i in range(len(scope_stack) + 1):
+#         subtable = get_table(scope_stack if i is 0 else scope_stack[:-i])
+#         if var_name in subtable:
+#             return (len(scope_stack) - i, subtable[var_name]['return_type'] if type(subtable[var_name]) is dict else subtable[var_name])
+#     return (0, None)
+
 def add_symbol(var_name, var_type):
     """Add an identifier in the local scope."""
     if var_name in local_names():
@@ -353,7 +361,6 @@ def p_function_call(p):
         p[0] = ast.Call(func=ast.Attribute(value=p[1], \
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
-        # [TODO] Typecheck expression for int
         if p[2] == '[':
             p[0] = ast.Subscript(
                 value=p[1],
@@ -571,7 +578,7 @@ def p_machine_body_stmt(p):
 def p_node(p):
     """node : NODE NAME NEWLINE
     """
-    p[0] = None if len(p) is 2 else nodes.Node(p[2])
+    p[0] = None if len(p) is 2 else nodes.Node(p[2], type='node')
 
 def p_function(p):
 

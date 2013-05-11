@@ -262,7 +262,7 @@ class TypeChecker(ast.NodeTransformer):
         self.generic_visit(node)
         if hasattr(node, 'type'):
             if node.args[0].type not in self.list_types:
-                node.type = None
+                # node.type = None
                 warnings.warn("""Typecast requires value of type int, float, bool or string:
                     have type %s""" % (str(node.args[0].type)), TransformError)
         # else:
@@ -271,6 +271,11 @@ class TypeChecker(ast.NodeTransformer):
             #     if arg.type != node.type:
             #         node.type = None
             #         warnings.warn(""")
+        # Set type if returning
+            # ret = symbol_table.get_return_type(node.func.id)
+            # if hasattr(node.func, 'return_type'):
+            #     node.type = node.func.return_type
+            #     print node.type
 
         return node
     
@@ -281,6 +286,12 @@ class TypeChecker(ast.NodeTransformer):
             warnings.warn("""Indexing value must be of type int: have 
                 type %s""" % (str(index_type)), TransformError)
         return node
+    def visit_Attribute(self, node):
+        # FIX #########
+        node.type = 'node'
+        return node
+ # ast.Call(func=p[1], \
+                # args=p[3], keywords=[], starargs=None, kwargs=None)
 
 #symbol table: get_table, all_names, global_names, local_names, get_type
 # check return type
@@ -299,13 +310,6 @@ class TypeChecker(ast.NodeTransformer):
 # func.name(params)
 # ast.Call(func=ast.Attribute(value=p[1], \
   #          attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
-
-# list[int]
-# ast.Subscript(
-#                 value=p[1],
-#                 slice=ast.Index(value=p[3]),
-#                 ctx=ast.Load(),
-#                 )
 
 
     def visit_BinOp(self, node):
@@ -343,6 +347,8 @@ class TypeChecker(ast.NodeTransformer):
                 if type(node.ops[0]) in self.str_comp:
                     node.type = bool
             elif l_type in self.arith_types and r_type in self.arith_types:
+                node.type = bool
+            elif l_type == 'node' and r_type == 'node':
                 node.type = bool
             else:
                  warnings.warn("""Invalid Comparison Expression: performing Comparison 
