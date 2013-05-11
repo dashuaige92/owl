@@ -191,16 +191,12 @@ class TypeChecker(ast.NodeTransformer):
         if hasattr(node.value, 'type') and node.value.type is not int:
             warnings.warn("List index must be an integer!", TransformError)
         return node
-# assign(targets=[
-#     subscript(value=Name(id=l)),
-#     slice=Index(value=Num)])
-#     ], value=Num(n=0)
 
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
-        if isinstance(node.targets[0], ast.Subscript):
-            node.type = node.targets[0].type[1]
+        #if isinstance(node.targets[0], ast.Subscript):
+            #node.type = node.targets[0].type[1]
         if node.type != node.value.type:
             if node.type == float and node.value.type == int or \
             node.type == (list, float) and node.value.type == (list, int):
