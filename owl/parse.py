@@ -375,22 +375,12 @@ def p_function_call(p):
     # variable_load DOT NAME LPAREN parameters RPAREN
     # [TODO] Add expected param_types
     elif len(p) == 7:
-        p[0] = ast.Call(func=ast.Attribute(value=p[1], \
+        p[0] = ast.Call(func=ast.Attribute(value=p[1],
             attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
         # variable_load LPAREN expression RPAREN
-        # [TODO] Typecheck expression for int
-        if p[2] == '[':
-            p[0] = ast.Subscript(
-                value=p[1],
-                slice=ast.Index(value=p[3]),
-                ctx=ast.Load(),
-                )
-        # variable_load LBRACK expression RBRACK
-        elif p[2] == '(':
-            ret = get_type(p[1].id)
-            p[0] = ast.Call(func=p[1], \
-                args=p[3], keywords=[], starargs=None, kwargs=None, param_types=get_param_types(p[1].id))
+        p[0] = ast.Call(func=p[1],
+                        args=p[3], keywords=[], starargs=None, kwargs=None, param_types=get_param_types(p[1].id))
 
 def p_parameters(p):
     """parameters    : expression
@@ -449,7 +439,6 @@ def p_assignment(p):
                   | variable_store MEQUAL expression
                   | variable_store TEQUAL expression
                   | variable_store DEQUAL expression
-                  | variable_store LBRACK expression RBRACK EQUAL expression   
     """
     operators = {
         '=' : ast.Eq(),
@@ -458,20 +447,12 @@ def p_assignment(p):
         '*=': ast.Mult(),
         '/=': ast.Div(),
     }
-    if len(p) == 4:
-        target = p[1]
-        value = p[3]
-    elif len(p) == 6:
-        target = ast.Subscript(
-            value=p[1],
-            slice=ast.Index(value=p[3]),
-            ctx=ast.Load(),
-            )
-        value = p[6]
-
+    target = p[1]
+    value = p[3]
     if p[2] == '=':
         p[0] = ast.Assign(targets=[target], value=value, type=p[1].type)
     else:
+        # [TODO] Typecheck
         p[0] = ast.AugAssign(target=target, op=operators[p[2]], value=value)
 
 def p_void(p):
@@ -555,13 +536,19 @@ def p_bool(p):
 def p_variable_store(p):
     """variable_store : NAME
                       | NAME LBRACK expression RBRACK
-
     """
     scope_level, var_type = get_type(p[1])
     if len(p) == 2:
         p[0] = ast.Name(p[1], ast.Store(), type=var_type, level=scope_level)
+
     elif len(p) == 5:
-        p[0] = ast.Subscript(ast.Name(p[1],ast.Load()), ast.Index(p[3]), ast.Store(), type=var_type, level=scope_level)
+        if type(var_type) is not tuple:
+            warnings.warn("%s variable subscripted on line %s!" % (str(var_type), getattr(p, 'lineno', 0)), ParseError)
+        else:
+            var_type = var_type[1]
+
+        # [TODO] Typecheck expression for int
+        p[0] = ast.Subscript(ast.Name(p[1], ast.Load()), ast.Index(p[3]), ast.Store(), type=var_type, level=scope_level)
 
 def p_variable_load(p):
     """variable_load : NAME
@@ -571,8 +558,16 @@ def p_variable_load(p):
     scope_level, var_type = get_type(p[1])
     if len(p) == 2:
         p[0] = ast.Name(p[1], ast.Load(), type=var_type, level=scope_level)
+
     elif len(p) == 5:
-        p[0] = ast.Subscript(ast.Name(p[1],ast.Load()), ast.Index(p[3]), ast.Load(), type=var_type, level=scope_level)
+        if type(var_type) is not tuple:
+            warnings.warn("%s variable subscripted on line %s!" % (str(var_type), getattr(p, 'lineno', 0)), ParseError)
+        else:
+            var_type = var_type[1]
+
+        # [TODO] Typecheck expression for int
+        p[0] = ast.Subscript(ast.Name(p[1], ast.Load()), ast.Index(p[3]), ast.Load(), type=var_type, level=scope_level)
+
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE

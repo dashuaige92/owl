@@ -9,12 +9,14 @@ class TestComparisonExpr(TransformTestCase):
 			5 == 10
 			""")
 		self.assertNoTransformError(owl)
+
 	def test_equal_num2_valid(self):
 		owl = textwrap.dedent(r"""
 			float f = 10.5
 			5 == f
 			""")
 		self.assertNoTransformError(owl)
+
 	def test_equal_str_valid(self):
 		owl = textwrap.dedent(r"""
 			"5" == "10"
