@@ -71,9 +71,12 @@ class TestFunctionCall(ParserTestCase):
 
 	def test_bracket_function(self):
 		owl = textwrap.dedent(r"""
+			string[] test_list = ["a","b"]
 			test_list[1]
+
 			""")
 		python = textwrap.dedent(r"""
+			test_list = ["a","b"]
 			test_list[1]
 			""")		
 		self.assertAST(owl, python)

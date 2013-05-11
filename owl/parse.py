@@ -236,6 +236,7 @@ def p_unary_expression(p):
 def p_iteration(p):
     """iteration : WHILE LPAREN expression RPAREN LBRACE statement_list RBRACE
                  | FOR variable_store IN variable_load LBRACE statement_list RBRACE
+                 | FOR variable_store IN list LBRACE statement_list RBRACE    
     """
 
     if p[1] == 'while':
@@ -355,7 +356,6 @@ def p_function_call(p):
                      | variable_load LPAREN parameters RPAREN
                      | variable_load DOT NAME LPAREN parameters RPAREN
                      | variable_load DOT NAME
-                     | variable_load LBRACK expression RBRACK
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True, param_types=[str])
@@ -448,8 +448,8 @@ def p_assignment(p):
                   | variable_store MEQUAL expression
                   | variable_store TEQUAL expression
                   | variable_store DEQUAL expression
+                  | variable_store LBRACK expression RBRACK EQUAL expression   
     """
-                  #| variable_store LBRACK expression RBRACK EQUAL expression
     operators = {
         '=' : ast.Eq(),
         '+=': ast.Add(),
@@ -553,16 +553,25 @@ def p_bool(p):
 # Use variable_store and variable_load instead of NAME for variables
 def p_variable_store(p):
     """variable_store : NAME
+                      | NAME LBRACK expression RBRACK
+
     """
     scope_level, var_type = get_type(p[1])
-    p[0] = ast.Name(p[1], ast.Store(), type=var_type, level=scope_level)
+    if len(p) == 2:
+        p[0] = ast.Name(p[1], ast.Store(), type=var_type, level=scope_level)
+    elif len(p) == 5:
+        p[0] = ast.Subscript(ast.Name(p[1],ast.Load()), ast.Index(p[3]), ast.Store(), type=var_type, level=scope_level)
 
 def p_variable_load(p):
     """variable_load : NAME
+                     | NAME LBRACK expression RBRACK
     """
     # check if variable has been declared
     scope_level, var_type = get_type(p[1])
-    p[0] = ast.Name(p[1], ast.Load(), type=var_type, level=scope_level)
+    if len(p) == 2:
+        p[0] = ast.Name(p[1], ast.Load(), type=var_type, level=scope_level)
+    elif len(p) == 5:
+        p[0] = ast.Subscript(ast.Name(p[1],ast.Load()), ast.Index(p[3]), ast.Load(), type=var_type, level=scope_level)
 
 def p_machine(p):
     """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE

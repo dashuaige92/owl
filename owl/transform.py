@@ -269,7 +269,6 @@ class TypeChecker(ast.NodeTransformer):
                 # node.type = None
                 warnings.warn("""Typecast requires value of type int, float, bool or string:
                     have type %s""" % (str(node.args[0].type)), TransformError)
-        # else:
 
             # for arg in node.args:
             #     if arg.type != node.type:

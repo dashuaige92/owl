@@ -4,15 +4,17 @@ import textwrap
 from test.parse_helper import TransformTestCase
 
 class TestFor(TransformTestCase):
-	# This should work
-	# def test_for_list_range(self):
-	# 	owl = textwrap.dedent(r"""
-	# 		int i
-	# 		for i in range(1, 10) {
-	# 			print(i)
-	# 		}
-	# 		""")
-	# 	self.assertNoTransformError(owl)
+
+	@unittest.skip("For list range")	
+	def test_for_list_range(self):
+		owl = textwrap.dedent(r"""
+			int i
+			for i in range(1, 10) {
+				print(i)
+			}
+			""")
+		self.assertNoTransformError(owl)
+
 	def test_for_list_valid(self):
 		owl = textwrap.dedent(r"""
 			int i
