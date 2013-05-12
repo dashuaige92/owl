@@ -1,0 +1,52 @@
+void found_match(int c) {
+	print("Found match!")
+	print("So far we have found " + toString(c) + " matches!")
+}
+
+void still_looking() {
+	print("Still looking...")
+}
+
+int count = 0
+machine m = {
+	node s0
+	node s1
+	node s2
+	node s3
+	node s4
+
+	enter(s0) {
+		still_looking()
+	}
+	enter(s1) {
+		still_looking()
+	}
+	enter(s2) {
+		still_looking()
+	}
+	enter(s3) {
+		still_looking()
+	}
+	enter(s4) {
+		count += 1
+		found_match(count)
+	}
+
+	# transitions
+	s0("0")->s0
+	s0("1")->s1
+	s1("0")->s0
+	s1("1")->s2	
+	s2("0")->s3
+	s2("1")->s2
+	s3("0")->s0
+	s3("1")->s4
+	s4("0")->s0
+	s4("1")->s2
+}
+
+string[] inputs = ["1","1","0","1","0","1","1","0","1","0","0","0","1","0","1","0","1","1","0","1","1","0","0","1"]
+string i
+for i in inputs {
+	m.step(i)
+}
