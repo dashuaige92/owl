@@ -53,14 +53,6 @@ class TestCall(TransformTestCase):
 			machine m = {
 				node s0
 			}
-			m.step()
-			""")
-		self.assertTransformError(owl)
-	def test_call_step_mult_invalid(self):
-		owl = textwrap.dedent(r"""
-			machine m = {
-				node s0
-			}
-			m.step("hi", "bye")
+			m.step(5)
 			""")
 		self.assertTransformError(owl)

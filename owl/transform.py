@@ -314,8 +314,8 @@ class TypeChecker(ast.NodeTransformer):
             # Set type if returning
         if isinstance(node.func, ast.Attribute):
             if str(node.func.attr) == 'step':
-                if len(node.args) != 1 or node.args[0].type != str:
-                    warnings.warn("""Function step requires one argument of type string
+                if node.args[0].type != str:
+                    warnings.warn("""Function step requires argument of type string
                         """, TransformError)
         if hasattr(node, 'return_type'):
             node.type = node.return_type
