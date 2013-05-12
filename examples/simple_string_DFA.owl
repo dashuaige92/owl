@@ -45,5 +45,9 @@ m.step("b")
 m.step("b")
 m.step("a")
 
-print(accept)
+if(accept) {
+	print("Accepted")
+} else {
+	print("Rejected")
+}
 
