@@ -354,8 +354,7 @@ def p_function_call(p):
                      | TOFLOAT LPAREN expression RPAREN
                      | TOSTRING LPAREN expression RPAREN
                      | variable_load LPAREN parameters RPAREN
-                     | variable_load DOT NAME LPAREN parameters RPAREN
-                     | variable_load DOT NAME
+                     | variable_load DOT STEP LPAREN string RPAREN
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True, param_types=[str])
@@ -376,7 +375,7 @@ def p_function_call(p):
     # [TODO] Add expected param_types
     elif len(p) == 7:
         p[0] = ast.Call(func=ast.Attribute(value=p[1],
-            attr=p[3], ctx=ast.Load()), args=p[5], keywords=[], starargs=None, kwargs=None)
+            attr=p[3], ctx=ast.Load()), args=[p[5]], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
         # variable_load LPAREN expression RPAREN
         p[0] = ast.Call(func=p[1],

@@ -41,6 +41,7 @@ reserved = {
     'enter'     : 'ENTER',
     'exit'      : 'EXIT',
     'end'       : 'END',
+    'step'      : 'STEP',
 
     # Typecasting
     'toInt'     : 'TOINT',

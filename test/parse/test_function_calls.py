@@ -53,21 +53,13 @@ class TestFunctionCall(ParserTestCase):
 
 	def test_built_in_function_call(self):
 		owl = textwrap.dedent(r"""
-			m.run(1)
+			m.step("1")
 			""")
 		python = textwrap.dedent(r"""
-			m.run(1)
+			m.step("1")
 			""")		
 		self.assertAST(owl, python)	
 
-	def test_dot_operator_call(self):
-		owl = textwrap.dedent(r"""
-			m.str
-			""")
-		python = textwrap.dedent(r"""
-			m.str
-			""")		
-		self.assertAST(owl, python)
 
 	def test_bracket_function(self):
 		owl = textwrap.dedent(r"""
