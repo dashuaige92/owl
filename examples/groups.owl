@@ -1,0 +1,17 @@
+print(groups(0))
+
+string g() {
+    return groups(0)
+}
+
+machine m = {
+    node s
+
+    s("(.*)") -> s {
+        print(groups(0))
+    }
+}
+
+m.step("hello")
+
+print(g())
