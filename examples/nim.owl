@@ -18,12 +18,13 @@ machine nim = {
     start() -> move
 
     enter(move) {
+        print("\n")
+        print("")
         print("Current stacks:")
         int s
         for s in stacks {
             print(toString(s) + " ")
         }
-        print("\n")
         print("Remove X chips from stack Y (X, Y): ")
     }
 
@@ -32,7 +33,12 @@ machine nim = {
         int chips = toInt(groups(0))
         int s = toInt(groups(1))
 
+        if (s >= 3) {
+            print("There aren't that many stacks...")
+            return
+        }
         if (stacks[s] < chips) {
+            print("That stack isn't that big...")
             return
         }
         stacks[s] -= chips
