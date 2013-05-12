@@ -24,7 +24,7 @@ class Transition(object):
     def __init__(self, start_state, end_state, match=None):
         self.start_state = start_state
         self.end_state = end_state
-        self.match = match
+        self.match = match + '$' if match else match
         self.on_enter = EventHook()
 
 class Automaton(object):
