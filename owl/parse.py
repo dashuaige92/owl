@@ -374,13 +374,11 @@ def p_function_call(p):
     elif p[1] == 'toString':
         p[0] = ast.Call(func=ast.Name(id='str', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=str)
 
-    # variable_load DOT NAME
-    elif len(p) == 4:
-        p[0] = ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
-
     # variable_load DOT NAME LPAREN parameters RPAREN
     # [TODO] Add expected param_types
     elif len(p) == 7:
+        if p[1].type != 'machine':
+            warnings.warn("Only variables of type machine can call 'step' function", ParseError)
         p[0] = ast.Call(func=ast.Attribute(value=p[1],
             attr=p[3], ctx=ast.Load()), args=[p[5]], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
@@ -587,7 +585,7 @@ def p_machine(p):
     """machine : MACHINE variable_init EQUAL LBRACE machine_body RBRACE
                | MACHINE variable_init EQUAL LBRACE RBRACE
     """
-    p[0] = nodes.Machine(p[2], p[5], level=0)
+    p[0] = nodes.Machine(p[2], p[5], level=0, type='machine')
 
 def p_machine_body(p):
     """machine_body : machine_body_stmt

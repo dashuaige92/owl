@@ -161,6 +161,12 @@ class TypeChecker(ast.NodeTransformer):
     str_comp = [ast.Eq, ast.NotEq]
     list_types = [int, float, str, bool]
     type_casts = ['int', 'float', 'str', 'bool']
+    aug_operators = {
+        str(ast.Add): '+=',
+        str(ast.Sub): '-=',
+        str(ast.Mult): '*=',
+        str(ast.Div):  '/=',
+    }
 
     def visit_Subscript(self, node):
         self.generic_visit(node)
@@ -172,10 +178,7 @@ class TypeChecker(ast.NodeTransformer):
         if hasattr(node.value, 'type') and node.value.type is not int:
             warnings.warn("List index must be an integer!", TransformError)
         return node
-# assign(targets=[
-#     Name(id=b)
-#     ], value=List(elts=[]))
-# ]
+
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
@@ -320,19 +323,23 @@ class TypeChecker(ast.NodeTransformer):
         # FIX #########
         node.type = 'node'
         return node
-
- # ast.Call(func=p[1], \
-                # args=p[3], keywords=[], starargs=None, kwargs=None)
-
-#symbol table: get_table, all_names, global_names, local_names, get_type
-# check return type
-# ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, 
-#    kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], 
-#       level=0, globals=global_names())
-
- # func(params)
- # ast.Call(func=p[1], \
-                # args=p[3], keywords=[], starargs=None, kwargs=None)
+#ast.AugAssign(target=target, op=operators[p[2]], value=value)
+    def visit_AugAssign(self, node):
+        self.generic_visit(node)
+        l_type = node.target.type
+        r_type = node.value.type
+        op = node.op
+        node.type = None
+        if l_type == float and r_type in self.arith_types:
+            node.type = float
+        elif l_type == int and r_type == int:
+            node.type = int
+        elif l_type == str and r_type == str and type(op) == ast.Add:
+            node.type = str
+        else:
+            warnings.warn("""Cannot perform operation'%s' on type '%s' with type '%s'
+                """ % (self.aug_operators[str(type(op))], l_type.__name__, r_type.__name__), TransformError)       
+        return node
 
 # obj.val
 # ast.Attribute(value=p[1], attr=p[3], ctx=ast.Load())
