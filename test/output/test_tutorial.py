@@ -32,5 +32,5 @@ class TestTutorial(OutputTestCase):
 
     def test_tutorial_pattern_matching(self):
         owl = 'examples/tutorial_pattern_matching.owl'
-        expected_output = "Still looking...\nStill looking...\nStill looking...\nStill looking...\nFound match!\nSo far we have found 1 matches!\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nFound match!\nSo far we have found 2 matches!\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nFound match!\nSo far we have found 3 matches!\nStill looking...\nStill looking...\nStill looking...\nStill looking...\n"
+        expected_output = "Still looking...\nStill looking...\nStill looking...\nFound match!\nSo far we have found 1 matches!\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nFound match!\nSo far we have found 2 matches!\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nStill looking...\nFound match!\nSo far we have found 3 matches!\nStill looking...\nStill looking...\nStill looking...\nStill looking...\n"
         self.assertOutput(owl, expected_output)
