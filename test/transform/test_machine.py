@@ -59,7 +59,7 @@ class TestMachine(TransformTestCase):
             def trans{ab_1}(groups):
                 pass
             
-            {ab_1} = Transition(a, b, lambda _x: (_x == '1') )
+            {ab_1} = Transition(a, b, '1')
             {ab_1}.on_enter += trans{ab_1}
 
             m3 = Automaton([a,b],[{ab_1}],a)
@@ -88,7 +88,7 @@ class TestMachine(TransformTestCase):
             def trans{ab_1}(groups):
                 print("hello")
 
-            {ab_1} = Transition(a, b, lambda _x: (_x == '1') )
+            {ab_1} = Transition(a, b, '1')
             {ab_1}.on_enter += trans{ab_1}
             
             m4 = Automaton([a,b],[{ab_1}],a)

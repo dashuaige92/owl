@@ -8,7 +8,6 @@ class TestBinaryModThreeDFA(OutputTestCase):
         owl = 'examples/binary_mod_three.owl'
         output = textwrap.dedent(
             r"""
-            is 0 mod 3.
             1
             is 1 mod 3.
             11

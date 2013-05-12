@@ -51,7 +51,7 @@ class Automaton(object):
         """
 
         transitions = self.states[self.current_state]
-        candidates = [] # List of candidates for next state
+        candidates = {} # Maps candidates to its re.match
         defaults = []
         transition = None
         for t in transitions:
@@ -59,12 +59,13 @@ class Automaton(object):
                 match = re.match(t.match, string)
                 if match:
                     transition = t
-                    candidates += [t]
+                    candidates[t] = match
             else:
                 defaults += [t]
 
         if len(candidates) == 1:
-            transition = candidates[0]
+            transition = candidates.keys()[0]
+            match = candidates[transition]
         elif len(candidates) > 1 or len(defaults) > 1:
             raise RuntimeError('Automaton must be deterministic (more than one transition on input)')
         elif len(candidates) == 0 and len(defaults) == 1:
