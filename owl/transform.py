@@ -202,7 +202,7 @@ class TypeChecker(ast.NodeTransformer):
             if type(node.type) is tuple and list in node.type and \
             node.value and hasattr(node.value, 'elts') and not node.value.elts:
                 node.value.type = node.type
-                return nodes
+                return node
             if node.type == float and node.value.type == int or \
             node.type == (list, float) and node.value.type == (list, int):
                 return node

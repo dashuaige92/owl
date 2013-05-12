@@ -1,0 +1,10 @@
+machine m = {
+	node s0
+
+	s0("(.+)") -> s0 {
+		print(groups(0))
+	}
+}
+
+m.step("banana")
+m.step("12345")

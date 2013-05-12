@@ -1,0 +1,5 @@
+int[] l = []
+int[] m = [1, 2, 4]
+print(m)
+m = []
+print(m)

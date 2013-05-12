@@ -7,5 +7,5 @@ class TestSimpleStringDFA(OutputTestCase):
 
     def test_simple_string_DFA(self):
         owl = 'examples/simple_string_DFA.owl'
-        expected_output = "True\n"
+        expected_output = "Accepted\n"
         self.assertOutput(owl, expected_output)
