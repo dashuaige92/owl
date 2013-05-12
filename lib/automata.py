@@ -15,7 +15,6 @@ class State(object):
         self.on_end = EventHook()
 
 
-
 class Transition(object):
     """Represent a transition between two states.
 
@@ -29,8 +28,6 @@ class Transition(object):
         self.end_state = end_state
         self.condition = condition
         self.on_enter = EventHook()
-
-
 
 
 class Automaton(object):
@@ -47,17 +44,11 @@ class Automaton(object):
         self.current_state = start_state
         self.current_input = '' 
         for t in transitions:
-            if t.start_state not in self.states \
-               or t.end_state not in self.states:
-                        raise RuntimeError('Invalid transition', t)
+            if t.start_state not in self.states or t.end_state not in self.states:
+                raise RuntimeError('Invalid transition', t)
             self.states[t.start_state].append(t)
 
         self.on_reject = EventHook()
-
-#        for s in self.states:
-#            print s.token+" "+str(len(self.states[s]))
-#            for t in self.states[s]:
-#                print t.string
 
         self.begin = True
 
@@ -128,8 +119,8 @@ class Automaton(object):
 
         # Run exit hooks for current_state
         self.current_state.on_exit.fire()
-        # Run transition hooks
-        trans.on_enter.fire()
+        # Run transition hooks with matched token groups
+        trans.on_enter.fire(token.groups())
 
         self.current_state = trans.end_state
         # Run enter hooks for next_state

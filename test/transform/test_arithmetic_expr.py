@@ -38,10 +38,19 @@ class TestArithmeticExpr(TransformTestCase):
 			""")
 		self.assertTransformError(owl)
 
-	def test_addition_invalid_2(self):
+	def test_addition_invalid_3(self):
 		owl = textwrap.dedent(r"""
 			5 + "100" + "hello"
 			""")
 		self.assertTransformError(owl)
+	def test_addition_invalid_3(self):
+		owl = textwrap.dedent(r"""
+			void func() {
+				return
+			}
+			5 + "100" + func()
+			""")
+		self.assertTransformError(owl)
+
 
 	# Test op with function call

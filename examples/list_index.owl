@@ -1,0 +1,5 @@
+int[] a = [14,71]
+int[] b = [34,67]
+int i = a[1]
+
+print(i)

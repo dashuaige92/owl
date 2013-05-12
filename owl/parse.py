@@ -349,6 +349,7 @@ def p_params_def(p):
 
 def p_function_call(p):
     """function_call : PRINT LPAREN expression RPAREN
+                     | GROUPS LPAREN expression RPAREN
                      | TOINT LPAREN expression RPAREN
                      | TOBOOL LPAREN expression RPAREN
                      | TOFLOAT LPAREN expression RPAREN
@@ -358,6 +359,8 @@ def p_function_call(p):
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True, param_types=[str])
+    elif p[1] == 'groups':
+        p[0] = nodes.Group(index=p[3], type=str)
     elif p[1] == 'toInt':
         p[0] = ast.Call(func=ast.Name(id='int', ctx=ast.Load()), args=[p[3]], keywords=[], starargs=None, kwargs=None, type=int)
     elif p[1] == 'toBool':
@@ -378,8 +381,12 @@ def p_function_call(p):
             attr=p[3], ctx=ast.Load()), args=[p[5]], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
         # variable_load LPAREN expression RPAREN
-        p[0] = ast.Call(func=p[1],
-                        args=p[3], keywords=[], starargs=None, kwargs=None, param_types=get_param_types(p[1].id))
+        scope_level, var_type = get_type(p[1])
+        p[0] = ast.Call(
+            func=p[1], args=p[3],
+            keywords=[], starargs=None, kwargs=None,
+            param_types=get_param_types(p[1].id),
+            type=var_type)
 
 def p_parameters(p):
     """parameters    : expression
@@ -515,12 +522,12 @@ def p_list(p):
     elif p[1] == 'range' and p[4] == ',':
         p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[
         p[3],p[5]
-      ], keywords=[], starargs=None, kwargs=None)
+      ], keywords=[], starargs=None, kwargs=None, type=(list, int))
 
     else:
         p[0] = value=ast.Call(func=ast.Name(id='range', ctx=ast.Load()), args=[
         p[3],
-      ], keywords=[], starargs=None, kwargs=None)
+      ], keywords=[], starargs=None, kwargs=None, type=(list, int))
 
 def p_bool(p):
     """bool : TRUE
@@ -560,7 +567,7 @@ def p_variable_load(p):
 
     elif len(p) == 5:
         if type(var_type) is not tuple:
-            warnings.warn("%s variable subscripted on line %s!" % (str(var_type), getattr(p, 'lineno', 0)), ParseError)
+            warnings.warn("%d variable subscripted on line %s!" % (str(var_type), getattr(p, 'lineno', 0)), ParseError)
         else:
             var_type = var_type[1]
 

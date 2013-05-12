@@ -4,7 +4,6 @@ import textwrap
 from test.parse_helper import TransformTestCase
 
 class TestFor(TransformTestCase):
-	@unittest.skip("For list range")	
 	def test_for_list_range(self):
 		owl = textwrap.dedent(r"""
 			int i
