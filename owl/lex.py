@@ -107,7 +107,7 @@ t_ignore  = ' \t\r'
 t_ignore_COMMENT = '\#.*'
 
 def t_NAME(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    r'[a-zA-Z][a-zA-Z_0-9]*'
     # Check for reserved keywords
     t.type = reserved.get(t.value, 'NAME')
     return t
