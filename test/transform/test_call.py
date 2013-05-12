@@ -20,7 +20,6 @@ class TestCall(TransformTestCase):
 			""")
 		self.assertNoTransformError(owl)
 
-
 	# Invalid
 	def test_call_typecasting_invalid(self):
 		owl = textwrap.dedent(r"""
@@ -49,4 +48,19 @@ class TestCall(TransformTestCase):
 			func(c, b, a)
 			""")
 		self.assertTransformError(owl)
-
+	def test_call_step_empty_invalid(self):
+		owl = textwrap.dedent(r"""
+			machine m = {
+				node s0
+			}
+			m.step()
+			""")
+		self.assertTransformError(owl)
+	def test_call_step_mult_invalid(self):
+		owl = textwrap.dedent(r"""
+			machine m = {
+				node s0
+			}
+			m.step("hi", "bye")
+			""")
+		self.assertTransformError(owl)

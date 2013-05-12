@@ -1,5 +1,25 @@
 int[] a = [14,71]
 int[] b = [34,67]
-int i = a[1]
 
-print(i)
+print("List a is:")
+print(a)
+print("List b is:")
+print(b)
+
+int change() {
+	int temp1 = a[0]
+	int temp2 = a[1]
+
+	a[0] = b[0]
+	a[1] = b[1]
+	b[0] = temp1
+	b[1] = temp2
+
+	return 0
+}
+
+change()
+print("Lists switched. A is:")
+print(a)
+print("Lists switched. B is:")
+print(b)
