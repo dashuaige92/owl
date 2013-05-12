@@ -19,11 +19,12 @@ class StandardLibraryAdder(ast.NodeTransformer):
     """
     def visit_Module(self, node):
         imports = [
+            ast.Import(names=[ast.alias(name='re', asname=None)]),
             ast.ImportFrom(
                 module='lib.automata',
                 names=[ast.alias(name='*', asname=None)],
                 level=0,
-            )
+            ),
         ]
         return ast.copy_location(ast.Module(
             body=imports + node.body
@@ -154,19 +155,13 @@ class MachineCodeGenerator(ast.NodeTransformer):
                     args=[
                         ast.Name(id=node.left, ctx=ast.Load()),
                         ast.Name(id=node.right, ctx=ast.Load()),
-                        ast.Lambda(args=ast.arguments(args=[
-                            ast.Name(id='_x', ctx=ast.Param()),
-                        ], vararg=None, kwarg=None, defaults=[]), body=ast.Compare(left=ast.Name(id='_x', ctx=ast.Load()), ops=[
-                            ast.Eq(),
-                        ], comparators=[
-                            ast.Str(s=node.arg.s), # Get value of ast.Str in arg (consider putting .split()[0] here and mention this in the manual
-                        ]))
+                        ast.Str(s=node.arg.s), # Get value of ast.Str in arg (consider putting .split()[0] here and mention this in the manual
                     ],
                     keywords=[],
                     starargs=None,
                     kwargs=None,
                 )
-                ), node)
+            ), node)
 
 
         ass = ast.AugAssign(ast.Attribute(ast.Name(transition_name, ast.Load()), 'on_enter', ast.Store()), ast.Add(), ast.Name(function_name, ast.Load()))

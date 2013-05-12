@@ -1,18 +1,21 @@
-bool running
+bool running = True
 int[] stacks = [3, 4, 5]
 
 bool gameOver() {
     int s
     for s in stacks {
         if (s != 0) {
-            return false
+            return False
         }
     }
-    return true
+    return True
 }
 
 machine nim = {
+    node start
     node move
+
+    start() -> move
 
     enter(move) {
         print("Current stacks:")
@@ -25,17 +28,17 @@ machine nim = {
     }
 
     # Need regex support
-    move("(\d+),\s+(\d+)") -> move {
+    move("(\d+),\s*(\d+)") -> move {
         int chips = toInt(groups(0))
         int s = toInt(groups(1))
 
         if (stacks[s] < chips) {
             return
         }
-        # stacks[s] -= chips
+        stacks[s] -= chips
         if (gameOver()) {
             print("You win!")
-            running = false
+            running = False
         }
     }
 
@@ -44,6 +47,7 @@ machine nim = {
     }
 }
 
+nim.step("Start")
 while (running) {
     nim.step(input(""))
 }
