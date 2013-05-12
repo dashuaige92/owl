@@ -615,13 +615,13 @@ def p_machine_body_stmt(p):
 
 
 def p_node(p):
-    """node : NODE NAME NEWLINE
+    """node : NODE variable_m_init NEWLINE
     """
     p[0] = None if len(p) is 2 else nodes.Node(p[2], type='node')
 
 def p_function(p):
 
-    """function : three_es LPAREN NAME new_machine_function_scope RPAREN LBRACE func_statement_list RBRACE
+    """function : three_es LPAREN variable_m new_machine_function_scope RPAREN LBRACE func_statement_list RBRACE
     """ 
     p[0] = nodes.Function(e=p[1], name=p[3], body=p[7], level=0, globals=global_names())
     pop_scope()
@@ -629,16 +629,15 @@ def p_function(p):
 def p_three_es(p):
     """three_es : ENTER
                 | EXIT
-                | END
     """
 
     p[0] = p[1]
 
 def p_transition(p):
-    """transition : NAME LPAREN string RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN string RPAREN ARROW NAME new_machine_transition_scope LBRACE func_statement_list RBRACE
-                  | NAME LPAREN RPAREN ARROW NAME NEWLINE
-                  | NAME LPAREN RPAREN ARROW NAME new_machine_default_transition_scope LBRACE func_statement_list RBRACE
+    """transition : variable_m LPAREN string RPAREN ARROW variable_m NEWLINE
+                  | variable_m LPAREN string RPAREN ARROW variable_m new_machine_transition_scope LBRACE func_statement_list RBRACE
+                  | variable_m LPAREN RPAREN ARROW variable_m NEWLINE
+                  | variable_m LPAREN RPAREN ARROW variable_m new_machine_default_transition_scope LBRACE func_statement_list RBRACE
     """
     left = p[1]
     right = p[6] if len(p) in [8, 11] else p[5]
@@ -647,6 +646,21 @@ def p_transition(p):
     p[0] = nodes.Transition(left=left, arg=arg, right=right, body=body, level=0, globals=global_names())
     if len(p) >= 10:
         pop_scope()
+
+def p_variable_m(p):
+    """variable_m : NAME
+    """
+    # check if variable has been declared
+    if not p[1] in all_names():
+        warnings.warn("%s variable not previously declared!" % p[1], ParseError)
+
+    p[0] = p[1]
+
+def p_variable_m_init(p):
+    """variable_m_init : NAME
+    """
+    add_symbol(p[1], p[-1])
+    p[0] = p[1]
 
 def p_new_machine_function_scope(p):
     """new_machine_function_scope :

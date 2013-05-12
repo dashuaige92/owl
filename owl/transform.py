@@ -94,14 +94,14 @@ class MachineCodeGenerator(ast.NodeTransformer):
 
     def visit_Function(self, node):
         fun = ast.FunctionDef(
-            name='func_%s' % (node.name,),
+            name='func_%s_%s' % (node.e, node.name),
             args=ast.arguments([], None, None, []),
             body=node.body if len(node.body) > 0 else [ast.Pass()],
             decorator_list=[],
             #level=node.level,
             globals=node.globals,
         )
-        ass = ast.AugAssign(ast.Attribute(ast.Name('%s' % node.name, ast.Load()), 'on_%s' % node.e, ast.Store()), ast.Add(), ast.Name('func_%s' % node.name, ast.Load()))
+        ass = ast.AugAssign(ast.Attribute(ast.Name('%s' % node.name, ast.Load()), 'on_%s' % node.e, ast.Store()), ast.Add(), ast.Name('func_%s_%s' % (node.e, node.name), ast.Load()))
         return [fun, ass]
 
     def visit_Transition(self, node):

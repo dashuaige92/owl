@@ -27,6 +27,61 @@ class TestMachine(TransformTestCase):
             """)
         self.assertTransformError(owl)
 
+    def test_machine_error_1(self):
+        owl = textwrap.dedent(
+        r"""
+        machine m1 = {
+            node a
+            node a
+        }
+        """)
+        self.assertParseError(owl)
+
+    def test_machine_error_2(self):
+        owl = textwrap.dedent(
+        r"""
+        machine m1 = {
+            node a
+            enter(b) {
+            }
+        }
+        """)
+        self.assertParseError(owl)
+
+    def test_machine_error_3(self):
+        owl = textwrap.dedent(
+        r"""
+        machine m1 = {
+            node a
+            a() -> b
+        }
+        """)
+        self.assertParseError(owl)
+
+    def test_machine_error_4(self):
+        owl = textwrap.dedent(
+        r"""
+        machine m1 = {
+            node a
+        }
+        machine m2 = {
+            node a
+        }
+        """)
+        self.assertParseError(owl)
+
+    def test_machine_error_5(self):
+        owl = textwrap.dedent(
+        r"""
+        machine m1 = {
+            node a
+        }
+        machine m1 = {
+            node b
+        }
+        """)
+        self.assertParseError(owl)
+
     def test_machine_simple(self):
         owl = textwrap.dedent(r"""
             machine m2 = {
@@ -112,10 +167,10 @@ class TestMachine(TransformTestCase):
         python = textwrap.dedent(r"""
             a = State()
 
-            def func_a():
+            def func_enter_a():
                 print("world")
             
-            a.on_enter += func_a
+            a.on_enter += func_enter_a
 
             m5 = Automaton([a],[],a)
 
