@@ -383,7 +383,7 @@ def p_function_call(p):
             attr=p[3], ctx=ast.Load()), args=[p[5]], keywords=[], starargs=None, kwargs=None)
     elif len(p) == 5:
         # variable_load LPAREN expression RPAREN
-        scope_level, var_type = get_type(p[1])
+        scope_level, var_type = get_type(p[1].id)
         p[0] = ast.Call(
             func=p[1], args=p[3],
             keywords=[], starargs=None, kwargs=None,
