@@ -9,6 +9,20 @@ class TestLiterals(LexerTestCase):
             '"Hello, world!"',
             ('"Hello, world!"', 'LIT_STRING'),
         )
+
+    @unittest.skip("Escaped characters not allowed?")
+    def test_string_literal_with_escaped_characters(self):
+        self.assertTokenTypes(
+            '"Hello,\nworld!"',
+            ('"Hello,\nworld!"', 'LIT_STRING'),
+        )
+
+    def test_multiline_string_literal_not_allowed(self):
+        self.assertLexError(
+            '''"Hello,
+            world!"''',
+        )
+
     def test_int_literal(self):
         self.assertTokenTypes(
             '3',

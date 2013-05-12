@@ -513,7 +513,7 @@ def p_number_float(p):
 def p_string(p):
     """string : LIT_STRING
     """
-    p[0] = ast.Str(p[1][1:-1], type=str)
+    p[0] = ast.Str(str(p[1][1:-1].decode('unicode_escape')), type=str)
 
 def p_list(p):
     """list : LBRACK parameters RBRACK

@@ -396,7 +396,7 @@ class SourceGenerator(NodeVisitor):
         self.write(node.id)
 
     def visit_Str(self, node):
-        self.write(str(repr(node.s).decode('unicode_escape')))
+        self.write(repr(node.s))
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
