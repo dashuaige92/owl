@@ -24,7 +24,7 @@ class TestFunctionDef(TransformTestCase):
 						return 3
 					}
 				}
-				return 0
+				return 1
 			}""")
 		self.assertNoTransformError(owl)
 	def test_function_def_simple_void_valid(self):

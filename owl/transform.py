@@ -214,12 +214,22 @@ class TypeChecker(ast.NodeTransformer):
                         have type %s""" % (str(node.name), str(node.type), 
                         str(stmt.type)), TransformError)
             elif hasattr(stmt, 'return_type'):
-                has_return = True
+                # has_return = True
                 for ret_type in stmt.return_type:
                     if ret_type != node.type:
                         warnings.warn("""Function %s must return value of type %s: 
                         have type %s""" % (str(node.name), str(node.type), 
                         str(ret_type)), TransformError)
+            elif hasattr(stmt, 'else_return_type'):
+                if len(stmt.else_return_type) > 0:
+                    has_return = True
+                for ret_type in stmt.else_return_type:
+                    if ret_type != node.type:
+                         warnings.warn("""Function %s must return value of type %s: 
+                        have type %s""" % (str(node.name), str(node.type), 
+                        str(ret_type)), TransformError)
+
+
         if has_return == False and node.type != None:
             warnings.warn("""Function %s must return value of type %s""" % (str(node.name),\
             str(node.type)), TransformError)
@@ -236,14 +246,19 @@ class TypeChecker(ast.NodeTransformer):
     def visit_If(self, node):
         self.generic_visit(node)
         node.return_type = set()
-        body = list(node.body)
-        if hasattr(node, 'orelse'):
-            body += node.orelse
-        for stmt in body:
+        node.else_return_type = set()
+        for stmt in node.body:
             if isinstance(stmt, ast.Return):
                 node.return_type.add(stmt.type)
             elif hasattr(stmt, 'return_type'):
                 node.return_type.update(stmt.return_type)
+        if hasattr(node, 'orelse'):
+            for stmt in node.orelse:
+                if isinstance(stmt, ast.Return):
+                    node.else_return_type.add(stmt.type)
+                    node.return_type.add(stmt.type)
+                elif hasattr(stmt, 'return_type'):
+                    node.return_type.update(stmt.return_type)
         return node
 
     def visit_While(self, node):
@@ -323,7 +338,7 @@ class TypeChecker(ast.NodeTransformer):
         # FIX #########
         node.type = 'node'
         return node
-#ast.AugAssign(target=target, op=operators[p[2]], value=value)
+
     def visit_AugAssign(self, node):
         self.generic_visit(node)
         l_type = node.target.type
