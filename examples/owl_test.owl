@@ -1,0 +1,110 @@
+##############################################################################
+##  owl_test.txt (not sure what the extension should be) 
+##  OWL test program
+## 
+##  Melanie Kambadur 
+## 
+##  I want to make a graph that has the following transitions:
+##    n0 ('thru') --> n1 
+##    n1 ('loop') --> n2
+##    n2 ('back') --> n1
+##    n1 ('thru') --> n3
+##  So that it looks something like:
+## 
+##                 > n2   
+##         'loop'/   / 'back'
+##              /   /      
+##   n0 ---> n1  < /    
+##     'thru'  \       
+##              \ 'thru'
+##               \ > n3 
+##  
+##  When my machine finishes running, I want to test if the given input string
+##  visited n2 enough times (arbitrarily 3 times).
+## 
+##  To test scoping and I/O, and to see what the program did as it ran, I also
+##  want to save a global string that keeps track of the states visited (each
+##  state adds itself to the string). The global string should then be printed
+##  at the completion of the graph (in the n3 state).
+###############################################################################
+
+## Return the boolean true if n>=3, else return false. 
+bool check_enough_n2_visits (int n) {
+  if (n >= 3) {
+    return True
+  } else {
+    return False
+  }
+}
+
+### keep a running string of visited states 
+string states_visited = "States visited: "
+### keep track of n2 visits
+int n2_visits
+
+
+machine m = {
+   node n0
+   node n1
+   node n2
+   node n3
+
+   ### In each of the states, add to our states_visited string
+   enter(n0) {
+     states_visited = states_visited + " n0 -> " 
+   }
+
+   enter(n1) {
+     states_visited = states_visited + " n1 -> " 
+   }
+
+   enter(n2) {
+     states_visited = states_visited + " n2 -> " 
+
+     ### keep track of n2_visits:
+     n2_visits = n2_visits + 1
+   }
+
+   enter(n3) {
+     states_visited = states_visited + " n3 -> " 
+
+     ### Print a list of the states visited 
+     print(states_visited)
+      
+     ### Check whether we visited state n2 'enough' times
+     print("Checking if we visited n2 at least 3 times ... ")
+
+     bool enough_visits = check_enough_n2_visits(n2_visits)
+     if (enough_visits) {
+       print("Yes we did :)")
+     } else {
+       print("No we didn't :(")
+     }
+   }
+   
+   ### transitions
+   n0("thru")->n1
+   n1("loop")->n2
+   n2("back")->n1
+   n1("thru")->n3 
+   
+}
+
+## I want to go through the machine with the following transitions:
+## n0 -> n1 -> n2 -> n1 -> n2 -> n1 -> n2 -> n1 -> n3
+## Please fix if the following DOES NOT do this. 
+m.step("thru")
+m.step("loop")
+m.step("back")
+m.step("loop")
+m.step("back")
+m.step("loop")
+m.step("back")
+m.step("thru")
+
+## Also, can I call m.run more than once? For ex., a set of inputs where we
+## don't visit n2 enough times:
+# m.step("thru")
+# m.step("loop")
+# m.step("back")
+# m.step("thru")
