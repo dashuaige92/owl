@@ -188,7 +188,10 @@ class TypeChecker(ast.NodeTransformer):
         if hasattr(node.value, 'type') and node.value.type is not int:
             warnings.warn("List index must be an integer!", TransformError)
         return node
-
+# assign(targets=[
+#     Name(id=b)
+#     ], value=List(elts=[]))
+# ]
     def visit_Assign(self, node):
         # Assign node must have type set in parse.py
         self.generic_visit(node)
@@ -196,9 +199,14 @@ class TypeChecker(ast.NodeTransformer):
         if isinstance(node.targets[0], ast.Subscript):
             node.type = node.targets[0].type
         if node.type != node.value.type:
+            if type(node.type) is tuple and list in node.type and \
+            node.value and hasattr(node.value, 'elts') and not node.value.elts:
+                node.value.type = node.type
+                return nodes
             if node.type == float and node.value.type == int or \
             node.type == (list, float) and node.value.type == (list, int):
                 return node
+
 
             warnings.warn("""Cannot assign type %s to variable of type %s""" \
                         % (str(node.value.type), str(node.type)), TransformError)

@@ -71,6 +71,15 @@ class TestLists(ParserTestCase):
             """)
         self.assertAST(owl, python)
 
+    def test_list_empty(self):
+        owl = textwrap.dedent(r"""
+            bool[] b = []
+            """)
+        python = textwrap.dedent(r"""
+            b = []
+            """)
+        self.assertAST(owl, python)
+
     def test_list_print(self):
         owl = textwrap.dedent(
             r"""

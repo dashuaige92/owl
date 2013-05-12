@@ -14,12 +14,17 @@ class TestList(TransformTestCase):
 			bool[] b = [True, False, True]
 			""")
 		self.assertNoTransformError(owl)
-	# def test_list_empty_valid(self):
-	# 	owl = textwrap.dedent(r"""
-	# 		bool[] b = []
-	# 		""")
-	# 	self.assertNoTransformError(owl)
-
+	def test_list_empty_valid(self):
+		owl = textwrap.dedent(r"""
+			bool[] b = []
+			""")
+		self.assertNoTransformError(owl)
+	def test_list_empty_assign_valid(self):
+		owl = textwrap.dedent(r"""
+			string[] s = ["h", "e", "l", "l", "o"]
+			s = []
+			""")
+		self.assertNoTransformError(owl)
 	# Invalid
 	def test_list_int_invalid(self):
 		owl = textwrap.dedent(r"""
