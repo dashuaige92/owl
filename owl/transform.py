@@ -14,22 +14,6 @@ nodes = []
 transitions = []
 
 
-class StandardLibraryAdder(ast.NodeTransformer):
-    """Append AST Nodes to mimic a standard library.
-    """
-    def visit_Module(self, node):
-        imports = [
-            ast.Import(names=[ast.alias(name='re', asname=None)]),
-            ast.ImportFrom(
-                module='lib.automata',
-                names=[ast.alias(name='*', asname=None)],
-                level=0,
-            ),
-        ]
-        return ast.copy_location(ast.Module(
-            body=imports + node.body
-        ), node)
-
 class MachineCodeGenerator(ast.NodeTransformer):
     """Expand Machine nodes to the builtin AST nodes that define them.
     """
@@ -511,6 +495,26 @@ class ScopeResolver(ast.NodeTransformer):
             node.id = '_'*(node.level + 1) + node.id
         return node
 
+class StandardLibraryAdder(ast.NodeTransformer):
+    """Append AST Nodes to mimic a standard library.
+    """
+    def visit_Module(self, node):
+        imports = [
+            ast.Import(names=[ast.alias(name='re', asname=None)]),
+            ast.ImportFrom(
+                module='lib.automata',
+                names=[ast.alias(name='*', asname=None)],
+                level=0,
+            ),
+            ast.Assign(
+                targets=[ast.Name(id='groups', ctx=ast.Store())],
+                value=ast.List(elts=[], ctx=ast.Load()),
+            ),
+        ]
+        return ast.copy_location(ast.Module(
+            body=imports + node.body
+        ), node)
+
 class PostProcessor(ast.NodeTransformer):
     """Convert miscellania that are not affected by the main Transformers.
     """
@@ -536,7 +540,7 @@ class PostProcessor(ast.NodeTransformer):
         , node)
 
 def transform(tree, filters=[]):
-    for Transformer in [StandardLibraryAdder, TypeChecker, MachineCodeGenerator, ScopeResolver, PostProcessor]:
+    for Transformer in [TypeChecker, MachineCodeGenerator, ScopeResolver, StandardLibraryAdder, PostProcessor]:
         if Transformer not in filters:
             tree = Transformer().visit(tree)
     tree = ast.fix_missing_locations(tree)
