@@ -40,6 +40,7 @@ class TestSelectionStatements(ParserTestCase):
     def test_if_else_statements2(self):
         owl = textwrap.dedent(
             r"""
+            int x
             if(x == 3) {
                 print("it's 3")
             } else {
@@ -48,6 +49,7 @@ class TestSelectionStatements(ParserTestCase):
             """)
         python = textwrap.dedent(
             r"""
+            x = 0
             if x == 3:
                 print "it's 3"
             else:

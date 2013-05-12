@@ -18,13 +18,15 @@ class TestFunctionDef(ParserTestCase):
 		self.assertAST(owl, python)
 
 		owl = textwrap.dedent(r"""
+            int x
 			string test() {
 				print(x)
 			}
 			""")
 		python = textwrap.dedent(r"""
-			def test():
-				print x
+            x = 0
+            def test():
+                print x
 			""")
 		self.assertAST(owl, python)
 

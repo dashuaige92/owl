@@ -8,11 +8,13 @@ class TestUnaryOp(ParserTestCase):
 	def test_unary_minus(self):
 		owl = textwrap.dedent(
 			r"""
+            int a
 			-a
 			""")
 		python = textwrap.dedent(
 			r"""
-			-a
+a = 0
+-a
 			""")
 		self.assertAST(owl, python)
 

@@ -288,8 +288,12 @@ def p_function_def(p):
     """function_def : type NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
                     | void NAME new_scope LPAREN params_def_list RPAREN LBRACE func_statement_list RBRACE
     """
-    p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], level=0, globals=global_names())
+    if len(p[8]) > 0:
+        p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=p[8], decorator_list=[], type=p[1], level=0, globals=global_names())
+    else:
+        p[0] = ast.FunctionDef(name=p[2], args=ast.arguments(args=p[5], vararg=None, kwarg=None, defaults=[]), body=[ast.Pass()], decorator_list=[], type=p[1], level=0, globals=global_names())
     pop_scope()
+    symbol_stack[0].append(p[2])
 
 def p_func_statement_list(p):
     """func_statement_list : func_statement_list_item
@@ -355,7 +359,7 @@ def p_function_call(p):
                      | TOFLOAT LPAREN expression RPAREN
                      | TOSTRING LPAREN expression RPAREN
                      | variable_load LPAREN parameters RPAREN
-                     | variable_load DOT STEP LPAREN string RPAREN
+                     | variable_load DOT STEP LPAREN expression RPAREN
     """
     if p[1] == 'print':
         p[0] = ast.Print(None, [p[3]], True, param_types=[str])
@@ -561,6 +565,10 @@ def p_variable_load(p):
                      | NAME LBRACK expression RBRACK
     """
     # check if variable has been declared
+    if not p[1] in all_names():
+        warnings.warn("%s variable not previously declared!" % p[1], ParseError)
+
+
     scope_level, var_type = get_type(p[1])
     if len(p) == 2:
         p[0] = ast.Name(p[1], ast.Load(), type=var_type, level=scope_level)
@@ -576,8 +584,8 @@ def p_variable_load(p):
 
 
 def p_machine(p):
-    """machine : MACHINE NAME EQUAL LBRACE machine_body RBRACE
-               | MACHINE NAME EQUAL LBRACE RBRACE
+    """machine : MACHINE variable_init EQUAL LBRACE machine_body RBRACE
+               | MACHINE variable_init EQUAL LBRACE RBRACE
     """
     p[0] = nodes.Machine(p[2], p[5], level=0)
 

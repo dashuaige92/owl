@@ -45,7 +45,7 @@ class TestCall(TransformTestCase):
 			}
 			int a = 0
 			string b = "1"
-			bool c = true
+			bool c = True
 			func(c, b, a)
 			""")
 		self.assertTransformError(owl)

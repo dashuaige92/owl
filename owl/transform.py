@@ -42,10 +42,12 @@ class MachineCodeGenerator(ast.NodeTransformer):
         if len(nodes) is 0:
             warnings.warn("Machine must declare at least one node!", TransformError)
             return node
-                
+
+        node.name.level = node.level
+
         statements = node.body + [
             ast.copy_location(ast.Assign(
-                targets=[ast.Name(id=node.name, ctx=ast.Store(), level=node.level)],
+                targets=[node.name],
                 value=ast.Call(
                     func=ast.Name(id='Automaton', ctx=ast.Load()),
                     args=[
