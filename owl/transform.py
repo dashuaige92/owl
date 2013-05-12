@@ -475,6 +475,11 @@ class ScopeResolver(ast.NodeTransformer):
     """Add underscores for scopes to avoid naming conflicts.
     Add global keyword when making new function scopes.
     """
+    def visit_Subscript(self, node):
+        self.generic_visit(node)
+        if hasattr(node, 'level'):
+            node.value.id = '_'*(node.level + 1) + node.value.id
+        return node
 
     def visit_FunctionDef(self, node):
         self.generic_visit(node)
