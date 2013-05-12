@@ -1,14 +1,9 @@
-int x
-bool y
 
 machine m = {
     node s
-
-    s() -> s {
-        int z = "hi"
+    s("b") -> s 
+    enter (s) {
+        print ("In")   
     }
 }
-
-int f(int a, int b) {
-   int y
-}
+ m.step("a")
