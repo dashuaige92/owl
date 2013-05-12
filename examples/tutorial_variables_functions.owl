@@ -1,0 +1,13 @@
+print("Hello world")
+
+void sayHello() {
+	print("Hello world")
+}
+
+sayHello()
+
+string hello = "Hello world"
+print(hello)
+
+int x = 5
+print(x + 2)

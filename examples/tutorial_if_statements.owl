@@ -1,0 +1,9 @@
+bool isHot(int temperature) {
+	if(temperature >= 70) {
+		return True
+	} else {
+		return False
+	}
+}
+
+print (isHot(50))

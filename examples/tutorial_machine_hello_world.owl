@@ -1,0 +1,21 @@
+machine hello = {
+	node s0
+	node s1
+
+	enter(s1) {
+		print("Hello world")
+	}
+
+	s0("a") -> s1
+}
+hello.step("a")
+
+machine hello2 = {
+	node s2
+	node s3
+
+	s2("a") -> s3 {
+		print("Hello world")
+	}
+}
+hello2.step("a")

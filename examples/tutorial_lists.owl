@@ -1,0 +1,3 @@
+string[] animals = ["dog", "cat", "horse"]
+string pet = animals[1]
+print(pet)
