@@ -18,7 +18,6 @@ machine nim = {
     start() -> move
 
     enter(move) {
-        print("\n")
         print("")
         print("Current stacks:")
         int s

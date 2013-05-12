@@ -4,29 +4,16 @@ import subprocess
 class OutputTestCase(unittest.TestCase):
     """A test case for testing the output of Owl programs.
     """
-    def assertOutput(self, owl_file, expected_output):
-        proc1 = subprocess.Popen(['python','compile.py',owl_file],stdout=subprocess.PIPE)
-        compiled = ''
-        while True:
-            line = proc1.stdout.readline()
-            if line != '':
-                compiled = compiled + line
-            else:
-                break
-
-        f = open('temp.py', 'w')
-        f.write(compiled)
-        f.close()
-
+    def assertOutput(self, owl_file, expected_output, owl_input=''):
         output = ''
-        proc2 = subprocess.Popen(['python','temp.py'],universal_newlines=True,stdout=subprocess.PIPE)
-        while True:
-            line = proc2.stdout.readline()
-            if line != '':
-                output = output + line
-            else:
-                break
+        p = subprocess.Popen(['python','run.py', owl_file],
+                                 universal_newlines=True,
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
 
+        p.stdin.write(owl_input)
+
+        output = p.stdout.read()
         if output != expected_output:
             raise AssertionError('Owl output does not match expected output!' +
                                  '\n\nOutput:\n' + repr(output) +
