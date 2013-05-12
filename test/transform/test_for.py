@@ -7,6 +7,14 @@ class TestFor(TransformTestCase):
 	def test_for_list_range(self):
 		owl = textwrap.dedent(r"""
 			int i
+			for i in range(1) {
+				print(i)
+			}
+			""")
+		self.assertNoTransformError(owl)
+	def test_for_list_range2(self):
+		owl = textwrap.dedent(r"""
+			int i
 			for i in range(1, 10) {
 				print(i)
 			}

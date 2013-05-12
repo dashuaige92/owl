@@ -310,6 +310,11 @@ class TypeChecker(ast.NodeTransformer):
                         type %s is given""" % (node.func.id, str(params[i]), (i+1), str(args[i])), \
                         TransformError)
             # Set type if returning
+        if isinstance(node.func, ast.Attribute):
+            if str(node.func.attr) == 'step':
+                if len(node.args) != 1 or node.args[0].type != str:
+                    warnings.warn("""Function step requires one argument of type string
+                        """, TransformError)
         if hasattr(node, 'return_type'):
             node.type = node.return_type
         return node
