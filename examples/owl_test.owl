@@ -30,12 +30,11 @@
 
 ## Return the boolean true if n>=3, else return false. 
 bool check_enough_n2_visits (int n) {
-  if (n >= 3) {
-    return True
-  } else {
-    return False
-  }
-}
+		if (n >= 3) {
+			return True
+			}
+		return False
+		}
 
 ### keep a running string of visited states 
 string states_visited = "States visited: "
@@ -44,50 +43,60 @@ int n2_visits
 
 
 machine m = {
-   node n0
-   node n1
-   node n2
-   node n3
+	node n0
+	node n1
+	node n2
+	node n3
 
-   ### In each of the states, add to our states_visited string
-   enter(n0) {
-     states_visited = states_visited + " n0 -> " 
-   }
+	### In each of the states, add to our states_visited string
+	exit(n0) {
+		states_visited = states_visited + " n0 " 
+	}
 
-   enter(n1) {
-     states_visited = states_visited + " n1 -> " 
-   }
+	enter(n1) {
+		states_visited = states_visited + " -> n1 " 
+	}
 
-   enter(n2) {
-     states_visited = states_visited + " n2 -> " 
+	enter(n2) {
+		states_visited = states_visited + " -> n2 " 
 
-     ### keep track of n2_visits:
-     n2_visits = n2_visits + 1
-   }
+		### keep track of n2_visits:
+		n2_visits = n2_visits + 1
+	}
 
-   enter(n3) {
-     states_visited = states_visited + " n3 -> " 
+	enter(n3) {
+		states_visited = states_visited + " -> n3 " 
 
-     ### Print a list of the states visited 
-     print(states_visited)
-      
-     ### Check whether we visited state n2 'enough' times
-     print("Checking if we visited n2 at least 3 times ... ")
+		### Print a list of the states visited 
+		print(states_visited)
 
-     bool enough_visits = check_enough_n2_visits(n2_visits)
-     if (enough_visits) {
-       print("Yes we did :)")
-     } else {
-       print("No we didn't :(")
-     }
-   }
-   
-   ### transitions
-   n0("thru")->n1
-   n1("loop")->n2
-   n2("back")->n1
-   n1("thru")->n3 
-   
+		### Check whether we visited state n2 'enough' times
+		print("Checking if we visited n2 at least 3 times ... ")
+
+		bool enough_visits = check_enough_n2_visits(n2_visits)
+		if (enough_visits) {
+			print("Yes we did :)")
+		} else {
+			print("No we didn't :(")
+		}
+	}
+
+	### transitions
+	n0("thru")->n1
+	n1("loop")->n2
+	n2("back")->n1
+	n1("thru")->n3 
+
+	n0("reset")->n0 
+	n1("reset")->n0 
+	n2("reset")->n0 
+	n3("reset")->n0 
+}
+
+void reset_machine () {
+	m.step("reset")
+	states_visited = "States visited: "
+	n2_visits = 0
 }
 
 ## I want to go through the machine with the following transitions:
@@ -104,7 +113,8 @@ m.step("thru")
 
 ## Also, can I call m.run more than once? For ex., a set of inputs where we
 ## don't visit n2 enough times:
-# m.step("thru")
-# m.step("loop")
-# m.step("back")
-# m.step("thru")
+reset_machine()
+m.step("thru")
+m.step("loop")
+m.step("back")
+m.step("thru")
